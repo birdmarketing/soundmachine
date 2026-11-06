@@ -1,0 +1,371 @@
+---
+// "Where is your business?" Shows exactly what SoundMachine covers in each region.
+import { REGIONS, PROS } from "../data/licensing";
+interface Props {
+  compact?: boolean;
+  initial?: "us" | "ca" | "uk" | "other";
+}
+const { compact = false, initial = "us" } = Astro.props;
+const statusLabel = { included: "Included", "you-license": "You license directly", local: "Local licence needed" } as const;
+---
+
+<div class:list={["checker", compact && "compact"]} data-checker>
+  <div class="ask">
+    <p class="q">Where is your business?</p>
+    <div class="regions" role="tablist" aria-label="Choose your country">
+      {
+        REGIONS.map((r) => (
+          <button type="button" role="tab" aria-selected={r.id === initial ? "true" : "false"} aria-controls={`lic-${r.id}`} id={`lic-tab-${r.id}`} tabindex={r.id === initial ? 0 : -1} data-region={r.id}>
+            <span class="code">{r.short}</span>
+            <span class="name">{r.name}</span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  {
+    REGIONS.map((r) => (
+      <div class:list={["result", r.status]} role="tabpanel" id={`lic-${r.id}`} aria-labelledby={`lic-tab-${r.id}`} hidden={r.id !== initial} data-result={r.id}>
+        <div class="verdict">
+          <span class="v-icon" aria-hidden="true">
+            {r.status === "included" ? "✓" : r.status === "you-license" ? "+" : "↗"}
+          </span>
+          <div>
+            <h3>{r.verdict}</h3>
+            <p>{r.summary}</p>
+          </div>
+        </div>
+
+        {r.pros.length > 0 && (
+          <ul class="pros">
+            {r.pros.map((pid) => {
+              const p = PROS[pid];
+              return (
+                <li class="pro">
+                  <span class="pro-logo">
+                    {p.logo ? <img src={p.logo.src} alt="" width={p.logo.w} height={p.logo.h} /> : <span class="pro-word">{p.name}</span>}
+                  </span>
+                  <span class="pro-name">{p.name}</span>
+                  <span class="pro-rep">{p.represents}</span>
+                  <span class:list={["pro-status", r.status]}>{statusLabel[r.status]}</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {!compact && (
+          <div class="cols">
+            <div>
+              <h4>SoundMachine provides</h4>
+              <ul class="tick-list">
+                {r.covered.map((c) => (
+                  <li>{c}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4>You need to arrange</h4>
+              {r.youNeed.length ? (
+                <ul class="need-list">
+                  {r.youNeed.map((c) => (
+                    <li>{c}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="nothing">Nothing else for background music played through SoundMachine.</p>
+              )}
+              <p class="law">
+                Governing law: <strong>{r.law}</strong>
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div class="foot">
+          {r.costLine && <p class="cost">{r.costLine}</p>}
+          {r.path ? (
+            <a class="text-link" href={r.path}>
+              {r.name} licensing guide
+            </a>
+          ) : (
+            <a class="text-link" href="/contact">
+              Ask our team about your country
+            </a>
+          )}
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .checker {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: clamp(20px, 3vw, 36px);
+    box-shadow: var(--shadow);
+  }
+  .q {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 14px;
+  }
+  .regions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media (min-width: 640px) {
+    .regions {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .regions button {
+    display: grid;
+    gap: 2px;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s,
+      transform 0.2s var(--ease);
+  }
+  .regions button:hover {
+    border-color: var(--teal);
+  }
+  .regions button[aria-selected="true"] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--white);
+  }
+  .code {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+  .name {
+    font-size: 0.82rem;
+    opacity: 0.8;
+  }
+  .result {
+    animation: fade 0.35s var(--ease);
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  .verdict {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 18px;
+    border-radius: 16px;
+    background: var(--teal-50);
+    margin-bottom: 18px;
+  }
+  .you-license .verdict {
+    background: var(--yellow-50);
+  }
+  .local .verdict {
+    background: var(--paper-2);
+  }
+  .v-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--white);
+    background: var(--green);
+  }
+  .you-license .v-icon {
+    background: var(--orange);
+  }
+  .local .v-icon {
+    background: var(--charcoal);
+  }
+  .verdict h3 {
+    margin: 0 0 4px;
+    font-size: 1.35rem;
+  }
+  .verdict p {
+    margin: 0;
+    color: var(--charcoal);
+  }
+  .pros {
+    list-style: none;
+    margin: 0 0 18px;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  .pro {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    grid-template-areas: "logo name" "logo rep" "logo status";
+    gap: 2px 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .pro-logo {
+    grid-area: logo;
+    width: 64px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    background: var(--white);
+  }
+  .pro-logo img {
+    max-width: 64px;
+    max-height: 40px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  .pro-word {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.1;
+    color: var(--teal-deep);
+  }
+  .pro-name {
+    grid-area: name;
+    font-weight: 700;
+  }
+  .pro-rep {
+    grid-area: rep;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .pro-status {
+    grid-area: status;
+    justify-self: start;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #dff3ea;
+    color: #136b4c;
+  }
+  .pro-status.you-license {
+    background: #fde7dc;
+    color: #a3360f;
+  }
+  .cols {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 18px;
+  }
+  @media (min-width: 720px) {
+    .cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .cols h4 {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .need-list {
+    margin: 0;
+    padding-left: 1.2em;
+  }
+  .need-list li::marker {
+    color: var(--orange);
+  }
+  .nothing {
+    font-weight: 600;
+    color: var(--green);
+  }
+  .law {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .cost {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--charcoal);
+    max-width: 60ch;
+  }
+  .compact .pros {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  }
+  .compact .pro {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "logo" "name" "status";
+    text-align: left;
+  }
+  .compact .pro-rep {
+    display: none;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-checker]").forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-region]"));
+    const results = root.querySelectorAll<HTMLElement>("[data-result]");
+    const show = (id: string, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t.dataset.region === id;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      results.forEach((r) => (r.hidden = r.dataset.result !== id));
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => show(t.dataset.region!));
+      t.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        e.preventDefault();
+        const n = (i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+        show(tabs[n].dataset.region!, true);
+      });
+    });
+    // Preselect from timezone as a convenience: Canada / UK visitors see their region first.
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      if (root.dataset.autoRegion !== "off") {
+        if (tz === "Europe/London") show("uk");
+        else if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina)/.test(tz)) show("ca");
+      }
+    } catch {}
+  });
+</script>

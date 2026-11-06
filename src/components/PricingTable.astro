@@ -1,0 +1,224 @@
+---
+import { PLANS } from "../data/pricing";
+import { APP } from "../data/site";
+const fmt = (n: number) => `$${n.toFixed(2)}`;
+---
+
+<div class="pricing" data-pricing data-billing="annual">
+  <div class="toggle-row">
+    <div class="seg" role="group" aria-label="Billing period">
+      <button type="button" aria-pressed="false" data-billing-btn="monthly">Monthly</button>
+      <button type="button" aria-pressed="true" data-billing-btn="annual">Annual</button>
+    </div>
+    <span class="save">Save 10% with annual billing</span>
+  </div>
+
+  <div class="plans">
+    {
+      PLANS.map((p) => (
+        <article class:list={["plan", p.id === "premium" && "featured"]}>
+          {p.tag && <span class:list={["tag", p.tagTone]}>{p.tag}</span>}
+          <h3>{p.name}</h3>
+          <p class="best">{p.bestFor}</p>
+          <div class="price">
+            {p.monthly !== null && p.annual !== null ? (
+              <>
+                <span class="amount" data-monthly={fmt(p.monthly)} data-annual={fmt(p.annual)}>
+                  {fmt(p.annual)}
+                </span>
+                <span class="per">
+                  per location
+                  <br />
+                  per month
+                </span>
+              </>
+            ) : (
+              <span class="amount custom">Let's talk</span>
+            )}
+          </div>
+          <p class="billed" data-billed>
+            {p.monthly !== null ? (
+              <>
+                <span class="annual-only">
+                  Billed annually. <s>{fmt(p.monthly!)}</s> monthly
+                </span>
+                <span class="monthly-only">Billed monthly, cancel anytime</span>
+              </>
+            ) : (
+              "Volume pricing for 10+ licences"
+            )}
+          </p>
+          <p class="summary">{p.summary}</p>
+          <ul class="tick-list">
+            {p.features.map((f) => (
+              <li>{f}</li>
+            ))}
+          </ul>
+          <a class:list={["btn", p.cta.kind === "trial" ? (p.id === "premium" ? "btn-red" : "btn-ghost") : "btn-teal"]} href={p.cta.kind === "trial" ? APP.freeTrial : "/contact"}>
+            {p.cta.label}
+          </a>
+        </article>
+      ))
+    }
+  </div>
+  <p class="fine">
+    Prices in USD per location licence. Each location needs its own licence, and extra zones are billed separately. Free trial, no credit card required. US and Canadian plans include public performance licences
+    for background music. <a href="/licensing">See what's covered</a>.
+  </p>
+</div>
+
+<style>
+  .toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .save {
+    font-weight: 700;
+    font-size: 0.9rem;
+    background: var(--teal-100);
+    color: var(--teal-deep);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .plans {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    align-items: stretch;
+  }
+  .plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 30px 26px 26px;
+    box-shadow: var(--shadow-sm);
+    transition:
+      transform 0.3s var(--ease),
+      box-shadow 0.3s;
+  }
+  .plan:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+  .plan.featured {
+    border: 2px solid var(--teal);
+    box-shadow: 0 20px 50px -24px rgb(0 144 159 / 55%);
+  }
+  .tag {
+    position: absolute;
+    top: -13px;
+    left: 24px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--teal-strong);
+    color: var(--white);
+  }
+  .tag.lime {
+    background: var(--lime);
+    color: var(--ink);
+  }
+  .plan h3 {
+    font-size: 1.35rem;
+    margin: 0;
+  }
+  .best {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .price {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    min-height: 64px;
+  }
+  .amount {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--teal-strong);
+    font-variant-numeric: tabular-nums;
+    transition:
+      opacity 0.2s,
+      transform 0.2s var(--ease);
+  }
+  .amount.swap {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  .amount.custom {
+    font-size: 2.2rem;
+    color: var(--ink);
+  }
+  .per {
+    font-size: 0.78rem;
+    line-height: 1.25;
+    color: var(--muted);
+    padding-bottom: 4px;
+  }
+  .billed {
+    font-size: 0.82rem;
+    color: var(--muted);
+    min-height: 1.4em;
+    margin: 0 0 6px;
+  }
+  [data-billing="annual"] .monthly-only,
+  [data-billing="monthly"] .annual-only {
+    display: none;
+  }
+  .summary {
+    font-weight: 600;
+    margin: 6px 0 14px;
+  }
+  .tick-list {
+    margin-bottom: 24px;
+    font-size: 0.94rem;
+  }
+  .plan .btn {
+    margin-top: auto;
+    width: 100%;
+  }
+  .fine {
+    margin: 28px auto 0;
+    max-width: 80ch;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-pricing]").forEach((root) => {
+    const btns = root.querySelectorAll<HTMLButtonElement>("[data-billing-btn]");
+    const amounts = root.querySelectorAll<HTMLElement>(".amount[data-monthly]");
+    btns.forEach((b) =>
+      b.addEventListener("click", () => {
+        const mode = b.dataset.billingBtn!;
+        if (root.dataset.billing === mode) return;
+        root.dataset.billing = mode;
+        btns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        amounts.forEach((a) => {
+          a.classList.add("swap");
+          window.setTimeout(() => {
+            a.textContent = a.dataset[mode as "monthly" | "annual"] || "";
+            a.classList.remove("swap");
+          }, 180);
+        });
+        document.dispatchEvent(new CustomEvent("pricing:billing", { detail: mode }));
+      }),
+    );
+  });
+</script>

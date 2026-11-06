@@ -1,0 +1,310 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHero from "../../components/PageHero.astro";
+import RightsExplainer from "../../components/licensing/RightsExplainer.astro";
+import RiskCalculator from "../../components/licensing/RiskCalculator.astro";
+import CoverageSim from "../../components/licensing/CoverageSim.astro";
+import CostCompare from "../../components/licensing/CostCompare.astro";
+import LimitsStrip from "../../components/licensing/LimitsStrip.astro";
+import UkSteps from "../../components/licensing/UkSteps.astro";
+import Faq from "../../components/Faq.astro";
+import CtaBand from "../../components/CtaBand.astro";
+import { LICENSING_PAGES, type LicensingPage } from "../../data/licensing-pages";
+import { PROS } from "../../data/licensing";
+
+export function getStaticPaths() {
+  return LICENSING_PAGES.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+const { page } = Astro.props as { page: LicensingPage };
+const others = LICENSING_PAGES.filter((p) => p.slug !== page.slug);
+const intro = page.blocks.slice(0, 2);
+const rest = page.blocks.slice(2);
+const short = (p: LicensingPage) => (p.kind === "pro" ? p.title.split(" ")[0] : p.title.replace(/^.* in (the )?/, ""));
+
+// Render a content block to HTML. All text comes from our own data file and is escaped.
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+type Block = LicensingPage["blocks"][number];
+function renderBlock(b: Block): string {
+  switch (b.type) {
+    case "text":
+      return `<h2>${esc(b.heading)}</h2>${b.body.map((p) => `<p>${esc(p)}</p>`).join("")}`;
+    case "list":
+      return `<h2>${esc(b.heading)}</h2>${b.intro ? `<p>${esc(b.intro)}</p>` : ""}<ul class="items">${b.items
+        .map((i) => `<li><strong>${esc(i.title)}</strong><span>${esc(i.text)}</span></li>`)
+        .join("")}</ul>`;
+    case "table":
+      return `<h2>${esc(b.heading)}</h2>${b.intro ? `<p>${esc(b.intro)}</p>` : ""}<div class="table-wrap"><table><thead><tr>${b.head
+        .map((h) => `<th scope="col">${esc(h)}</th>`)
+        .join("")}</tr></thead><tbody>${b.rows
+        .map((r) => `<tr>${r.map((c, i) => (i === 0 ? `<th scope="row">${esc(c)}</th>` : `<td>${esc(c)}</td>`)).join("")}</tr>`)
+        .join("")}</tbody></table></div>`;
+    case "callout":
+      return `<div class="callout ${b.tone}"><h2>${esc(b.heading)}</h2><p>${esc(b.body)}</p></div>`;
+  }
+}
+---
+
+<Base title={page.metaTitle} description={page.description} path={`/licensing/${page.slug}`}>
+  <nav class="crumbs container" aria-label="Breadcrumb">
+    <a href="/licensing">Licensing</a> <span aria-hidden="true">/</span> <span aria-current="page">{short(page)}</span>
+  </nav>
+  <PageHero eyebrow={page.eyebrow} title={page.title} lede={page.lede}>
+    <div class:list={["verdict", page.verdict.tone]}>
+      <span class="v-badge">{page.verdict.tone === "included" ? "✓" : "1 + 2"}</span>
+      <p class="v-label">{page.verdict.label}</p>
+      <p class="v-text">{page.verdict.text}</p>
+      <ul class="v-pros">
+        {
+          page.pros.map((id) => {
+            const p = PROS[id];
+            return (
+              <li class:list={[page.focusPro === id && "focus"]}>
+                {p.logo ? <img src={p.logo.src} alt="" width={p.logo.w} height={p.logo.h} /> : null}
+                <span>{p.name}</span>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </PageHero>
+
+  {/* Opening content */}
+  <section class="section white">
+    <div class="container blocks">
+      {
+        intro.map((b) => (
+          <div class="block reveal">
+            <Fragment set:html={renderBlock(b)} />
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* Interactive widgets */}
+  {
+    page.widgets.map((w) => (
+      <section class:list={["section-tight", w === "rights" && "alt"]}>
+        <div class="container reveal">
+          {w === "steps-uk" && <UkSteps />}
+          {w === "rights" && (
+            <>
+              <div class="section-head">
+                <span class="eyebrow">The basics</span>
+                <h2>Three kinds of music rights</h2>
+              </div>
+              <RightsExplainer region={page.region} />
+            </>
+          )}
+          {w === "coverage" && <CoverageSim focus={page.focusPro as any} />}
+          {w === "cost" && <CostCompare region={page.region === "ca" ? "ca" : "us"} />}
+          {w === "risk" && <RiskCalculator />}
+          {w === "limits" && <LimitsStrip />}
+        </div>
+      </section>
+    ))
+  }
+
+  {
+    rest.length > 0 && (
+      <section class="section">
+        <div class="container blocks">
+          {rest.map((b) => (
+            <div class:list={["block reveal", b.type]}>
+              <Fragment set:html={renderBlock(b)} />
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <Faq items={page.faq} title={`${short(page)} licensing FAQ`} />
+
+  <section class="section-tight">
+    <div class="container">
+      <h2 class="others-title">More licensing guides</h2>
+      <ul class="others">
+        <li><a href="/licensing">Licensing overview</a></li>
+        {
+          others.map((o) => (
+            <li>
+              <a href={`/licensing/${o.slug}`}>{short(o)}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand title="Play it fair. Try it for free." text="Licensed background music with the tools to run it, free to try with no credit card." />
+</Base>
+
+<style>
+  .crumbs {
+    padding-top: 24px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .crumbs a {
+    color: var(--muted);
+  }
+  .verdict {
+    position: relative;
+    padding: 28px;
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    border: 2px solid var(--green);
+    box-shadow: var(--shadow);
+  }
+  .verdict.you-license {
+    border-color: var(--orange);
+  }
+  .v-badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 48px;
+    height: 48px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--green);
+    color: var(--white);
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+  }
+  .you-license .v-badge {
+    background: var(--orange);
+    font-size: 0.95rem;
+  }
+  .v-label {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+    line-height: 1.15;
+  }
+  .v-text {
+    color: var(--charcoal);
+  }
+  .v-pros {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .v-pros li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .v-pros li.focus {
+    border-color: var(--teal);
+    background: var(--teal-50);
+  }
+  .v-pros img {
+    height: 22px;
+    width: auto;
+    max-width: 60px;
+    object-fit: contain;
+  }
+  .v-pros li:not(:has(img)) {
+    padding-left: 12px;
+  }
+  .blocks {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+  @media (min-width: 960px) {
+    .blocks {
+      grid-template-columns: 1fr 1fr;
+    }
+    .block.table,
+    .block.callout {
+      grid-column: 1 / -1;
+    }
+  }
+  .block :global(h2) {
+    font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+  }
+  .block :global(.items) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .block :global(.items li) {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+  .block :global(.items strong) {
+    display: block;
+  }
+  .block :global(.items span) {
+    color: var(--charcoal);
+    font-size: 0.95rem;
+  }
+  .block :global(.callout) {
+    padding: clamp(22px, 3.5vw, 36px);
+    border-radius: var(--radius-lg);
+  }
+  .block :global(.callout h2) {
+    margin-bottom: 10px;
+  }
+  .block :global(.callout p) {
+    margin: 0;
+    font-size: 1.1rem;
+    max-width: 75ch;
+  }
+  .block :global(.callout.teal) {
+    background: var(--teal-strong);
+    color: var(--white);
+  }
+  .block :global(.callout.teal h2) {
+    color: var(--white);
+  }
+  .block :global(.callout.red) {
+    background: var(--red-50);
+    border: 1px solid #f2c9cc;
+  }
+  .block :global(.callout.yellow) {
+    background: var(--yellow-50);
+  }
+  .others-title {
+    font-size: 1.4rem;
+  }
+  .others {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .others a {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .others a:hover {
+    border-color: var(--teal);
+    background: var(--teal-50);
+  }
+</style>

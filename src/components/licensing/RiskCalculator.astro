@@ -1,0 +1,163 @@
+---
+import { DAMAGES, SM_ANNUAL_FROM } from "../../data/licensing";
+const initial = 20;
+---
+
+<div class="risk" data-risk data-min={DAMAGES.min} data-max={DAMAGES.max} data-sm={SM_ANNUAL_FROM}>
+  <div class="risk-copy">
+    <span class="eyebrow">Risk calculator</span>
+    <h3>What could an unlicensed playlist cost?</h3>
+    <p>US statutory damages for copyright infringement range from $750 to $150,000 per song, depending on whether the infringement is found to be willful.</p>
+    <label class="songs">
+      <span>Songs in your daily playlist: <strong data-songs>{initial}</strong></span>
+      <input type="range" min="1" max="100" value={initial} data-songs-input aria-label="Number of songs played without a licence" />
+    </label>
+  </div>
+  <div class="risk-out" aria-live="polite">
+    <div class="big">
+      <span class="label">Potential statutory damages, up to</span>
+      <strong data-max-out>$3,000,000</strong>
+      <span class="from">from <span data-min-out>$15,000</span> at the statutory minimum</span>
+    </div>
+    <div class="compare">
+      <div class="bar-row">
+        <span>Unlicensed (maximum)</span>
+        <span class="bar danger"><i style="width:100%"></i></span>
+      </div>
+      <div class="bar-row">
+        <span>SoundMachine, a full year</span>
+        <span class="bar ok"><i data-sm-bar style="width:1%"></i></span>
+      </div>
+      <p class="ratio"><strong data-ratio>9,277×</strong> the cost of a year of SoundMachine Business, from $323.40.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .risk {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: clamp(24px, 4vw, 44px);
+    border-radius: var(--radius-lg);
+    background: var(--red-deep);
+    color: #f6dcde;
+  }
+  @media (min-width: 900px) {
+    .risk {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+  }
+  .risk h3 {
+    color: var(--white);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+  }
+  .risk .eyebrow {
+    color: var(--yellow);
+  }
+  .songs {
+    display: grid;
+    gap: 6px;
+    margin-top: 20px;
+    font-weight: 600;
+  }
+  .songs strong {
+    color: var(--white);
+    font-size: 1.2rem;
+  }
+  .risk input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(90deg, var(--yellow) var(--fill, 20%), rgb(255 255 255 / 20%) var(--fill, 20%));
+  }
+  .risk input[type="range"]::-moz-range-track {
+    background: linear-gradient(90deg, var(--yellow) var(--fill, 20%), rgb(255 255 255 / 20%) var(--fill, 20%));
+  }
+  .risk input[type="range"]::-webkit-slider-thumb {
+    border-color: var(--yellow);
+    background: var(--red-deep);
+  }
+  .risk-out {
+    background: rgb(0 0 0 / 22%);
+    border-radius: var(--radius);
+    padding: clamp(20px, 3vw, 32px);
+  }
+  .big {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+  .label,
+  .from {
+    font-size: 0.9rem;
+    color: #e6b9bd;
+  }
+  .big strong {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.8rem, 6vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 12px;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  .bar {
+    height: 14px;
+    border-radius: 7px;
+    background: rgb(255 255 255 / 10%);
+    overflow: hidden;
+  }
+  .bar i {
+    display: block;
+    height: 100%;
+    border-radius: 7px;
+    transition: width 0.4s var(--ease);
+  }
+  .danger i {
+    background: linear-gradient(90deg, var(--orange), var(--red));
+  }
+  .ok i {
+    background: var(--lime);
+    min-width: 4px;
+  }
+  .ratio {
+    margin: 16px 0 0;
+    font-size: 0.95rem;
+  }
+  .ratio strong {
+    color: var(--yellow);
+  }
+  @media (max-width: 520px) {
+    .bar-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-risk]").forEach((root) => {
+    const min = Number(root.dataset.min);
+    const max = Number(root.dataset.max);
+    const sm = Number(root.dataset.sm);
+    const input = root.querySelector<HTMLInputElement>("[data-songs-input]")!;
+    const money = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
+    const update = () => {
+      const n = Number(input.value);
+      root.querySelector("[data-songs]")!.textContent = String(n);
+      root.querySelector("[data-max-out]")!.textContent = money(n * max);
+      root.querySelector("[data-min-out]")!.textContent = money(n * min);
+      root.querySelector("[data-ratio]")!.textContent = Math.round((n * max) / sm).toLocaleString("en-US") + "×";
+      (root.querySelector("[data-sm-bar]") as HTMLElement).style.width = `${Math.max(0.4, (sm / (n * max)) * 100)}%`;
+    };
+    input.addEventListener("input", update);
+    update();
+  });
+</script>

@@ -1,0 +1,405 @@
+---
+// New section (not on the current sound-machine.com): Research & insights.
+import Base from "../layouts/Base.astro";
+import StrategyExplorer from "../components/research/StrategyExplorer.astro";
+import LeverLab from "../components/research/LeverLab.astro";
+import EnergyCurves from "../components/research/EnergyCurves.astro";
+import StatValue from "../components/research/StatValue.astro";
+import CtaBand from "../components/CtaBand.astro";
+import { HERO_STATS, STUDIES, LIBRARY } from "../data/research";
+---
+
+<Base
+  title="Research: The Science of Sound in Business | SoundMachine"
+  description="Music psychology for business: how tempo, volume, brand fit and familiarity change dwell time, spend and perceived waits, with sound strategies you can run in SoundMachine."
+  path="/research"
+>
+  <section class="r-hero dark">
+    <div class="r-bars" aria-hidden="true">
+      {Array.from({ length: 48 }).map((_, i) => <i style={`--h:${20 + ((i * 53) % 80)}%;--d:${((i * 0.17) % 1.6).toFixed(2)}s`} />)}
+    </div>
+    <div class="container r-hero-in">
+      <span class="eyebrow">Research &amp; insights</span>
+      <h1>The science of sound in business</h1>
+      <p class="lede">
+        Behind every station and schedule there's research. Tempo, volume and brand fit change how long people stay, what they buy and how they feel about your brand. Here's the evidence, and the sound strategies built on it.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn-yellow" href="#strategies">Explore sound strategies</a>
+        <a class="btn btn-ghost" href="#studies">Read the studies</a>
+      </div>
+      <ul class="hero-stats">
+        {
+          HERO_STATS.map((s) => (
+            <li>
+              <StatValue stat={s} class="hs-v" />
+              <span>{s.label}</span>
+              {s.source && <em>{s.source}</em>}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <nav class="jump" aria-label="On this page">
+    <div class="container">
+      <a href="#strategies">Sound strategies</a>
+      <a href="#lab">Music lever lab</a>
+      <a href="#industries">By industry</a>
+      <a href="#studies">Studies</a>
+      <a href="#library">Insight library</a>
+    </div>
+  </nav>
+
+  <section class="section dark" id="strategies">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Sound strategies</span>
+        <h2>Pick a goal. Get the strategy.</h2>
+        <p>Every business wants something different from its music. Choose an outcome to see the psychology behind it, the evidence, and how to put it to work in SoundMachine.</p>
+      </div>
+      <StrategyExplorer />
+      <p class="data-note">
+        † Illustrative placeholder figure for this preview. Replace it with SoundMachine customer data or a sourced statistic before launch. Cited academic figures are as widely reported and should be checked against the
+        original papers.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="lab">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Music lever lab</span>
+        <h2>Four levers that shape behaviour</h2>
+        <p>Move the sliders to see how tempo, volume, brand fit and familiarity push customer behaviour in different directions, and why "just put the radio on" leaves results to chance.</p>
+      </div>
+      <div class="reveal"><LeverLab /></div>
+    </div>
+  </section>
+
+  <section class="section alt" id="industries">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Energy curves</span>
+        <h2>The shape of a great day, by industry</h2>
+        <p>The right tempo changes through the day. These are example target curves you can build with SoundMachine schedules, from a gentle breakfast to a high-energy evening peak.</p>
+      </div>
+      <div class="reveal"><EnergyCurves /></div>
+      <p class="data-note">Curves are illustrative examples, not prescriptions. † marks placeholder figures.</p>
+    </div>
+  </section>
+
+  <section class="section" id="studies">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Studies</span>
+        <h2>The research behind the strategies</h2>
+        <p>Landmark studies in music and consumer behaviour, plus customer studies from SoundMachine locations.</p>
+      </div>
+      <ul class="studies reveal">
+        {
+          STUDIES.map((s) => (
+            <li class:list={["study", s.status]}>
+              <span class="s-kind">{s.kind}</span>
+              <h3>{s.title}</h3>
+              <p class="s-setting">{s.setting}</p>
+              <div class="s-stat">
+                <StatValue stat={s.stat} class="ss-v" />
+                <span>{s.stat.label}</span>
+              </div>
+              <p class="s-finding">{s.finding}</p>
+              {s.ref ? <p class="s-ref">{s.ref}</p> : <p class="s-ref">Customer study in preparation. Figures are placeholders.</p>}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section alt" id="library">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Insight library</span>
+        <h2>Guides and insights</h2>
+        <p>Practical reading on music psychology, brand experience, licensing and sound systems from the SoundMachine team.</p>
+      </div>
+      <div class="library reveal">
+        {
+          LIBRARY.map((t) => (
+            <div class="topic">
+              <h3>{t.topic}</h3>
+              <ul>
+                {t.items.map((i) => (
+                  <li>
+                    <a href={i.href}>
+                      {i.title}
+                      {i.href.startsWith("http") && <span class="ext"> ↗</span>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="reveal">
+        <span class="eyebrow">Our method</span>
+        <h2>How we use research</h2>
+        <p>
+          SoundMachine's curators build stations around how music works in real spaces: tempo, energy, familiarity, lyrical content and brand fit. Schedules then match those qualities to your trading day, so the right sound plays at the
+          right moment, automatically.
+        </p>
+      </div>
+      <ul class="method reveal">
+        <li><strong>Curate</strong><span>Stations programmed for energy, tempo and mood, not just genre.</span></li>
+        <li><strong>Match</strong><span>Brand-fit mixes and imported playlists reflect your identity.</span></li>
+        <li><strong>Schedule</strong><span>Dayparts shift energy as your customers and goals change.</span></li>
+        <li><strong>Refine</strong><span>Like, dislike and rotate to keep the sound fresh for staff and guests.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand title="Put the research to work." text="Start a free trial and build your first sound strategy in minutes." />
+</Base>
+
+<style>
+  .r-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(64px, 9vw, 128px) 0 clamp(48px, 7vw, 88px);
+  }
+  .r-bars {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 55%;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+  .r-bars i {
+    flex: 1;
+    height: var(--h);
+    background: linear-gradient(180deg, var(--yellow), transparent);
+    border-radius: 4px 4px 0 0;
+    transform-origin: bottom;
+    animation: eq 2.6s ease-in-out infinite;
+    animation-delay: calc(var(--d) * -1);
+  }
+  .r-hero-in {
+    position: relative;
+  }
+  .r-hero h1 {
+    max-width: 14ch;
+  }
+  .r-hero .btn-row {
+    margin: 32px 0 56px;
+  }
+  .hero-stats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  }
+  .hero-stats li {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    padding: 22px;
+    border-radius: var(--radius);
+    background: rgb(15 50 56 / 85%);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgb(255 255 255 / 10%);
+  }
+  .hero-stats :global(.hs-v) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 4vw, 3.2rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--yellow);
+  }
+  .hero-stats span {
+    color: #d6e5e7;
+  }
+  .hero-stats em {
+    font-style: normal;
+    font-size: 0.78rem;
+    color: #8fb0b5;
+  }
+  .jump {
+    position: sticky;
+    top: 72px;
+    z-index: 20;
+    background: rgb(250 248 244 / 92%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .jump .container {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-block: 10px;
+    scrollbar-width: none;
+  }
+  .jump a {
+    flex: none;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--charcoal);
+    text-decoration: none;
+  }
+  .jump a:hover {
+    background: var(--teal-100);
+  }
+  .studies {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  }
+  .study {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 26px;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .study.placeholder {
+    background: repeating-linear-gradient(135deg, var(--white) 0 14px, var(--paper) 14px 28px);
+    border-style: dashed;
+  }
+  .s-kind {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-strong);
+  }
+  .placeholder .s-kind {
+    color: var(--red);
+  }
+  .study h3 {
+    margin: 0;
+  }
+  .s-setting {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0;
+  }
+  .s-stat {
+    display: grid;
+    padding: 14px 0;
+    border-block: 1px solid var(--line);
+    margin: 8px 0;
+  }
+  .s-stat :global(.ss-v) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.6rem;
+    line-height: 1.05;
+    color: var(--teal-strong);
+  }
+  .s-stat span {
+    font-size: 0.9rem;
+    color: var(--charcoal);
+  }
+  .s-finding {
+    margin: 0;
+  }
+  .s-ref {
+    margin: auto 0 0;
+    padding-top: 10px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .library {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .topic {
+    padding: 24px;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .topic h3 {
+    font-size: 1.25rem;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--yellow);
+    display: inline-block;
+  }
+  .topic ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: grid;
+  }
+  .topic li a {
+    display: block;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .topic li a:hover {
+    color: var(--teal-strong);
+  }
+  .ext {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .method {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+  .method li {
+    display: grid;
+    gap: 4px;
+    padding: 22px;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--teal);
+  }
+  .method li:nth-child(2) {
+    border-top-color: var(--red);
+  }
+  .method li:nth-child(3) {
+    border-top-color: var(--orange);
+  }
+  .method li:nth-child(4) {
+    border-top-color: var(--yellow-strong);
+  }
+  .method strong {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+  .method span {
+    color: var(--muted);
+  }
+</style>

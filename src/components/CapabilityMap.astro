@@ -1,0 +1,218 @@
+---
+// Every SoundMachine capability, grouped by job, filterable by plan.
+type Cap = { title: string; text: string; plans: ("b" | "p" | "hd" | "e")[]; note?: string };
+const ALL: Cap["plans"] = ["b", "p", "hd", "e"];
+const GROUPS: { name: string; colour: string; caps: Cap[] }[] = [
+  {
+    name: "Define your sound",
+    colour: "var(--teal)",
+    caps: [
+      { title: "Curated stations", text: "Expert-programmed stations across every genre and mood.", plans: ALL, note: "100+ on Business, 500+ on Premium and above" },
+      { title: "Energy slider", text: "Play only mellow or only upbeat songs from any station.", plans: ALL },
+      { title: "Weighted mixes", text: "Blend stations and decide how much each one weighs.", plans: ALL },
+      { title: "Playlist import", text: "Bring playlists from Spotify, Apple Music, Amazon Music and more, matched to the licensed catalogue.", plans: ["p", "hd", "e"] },
+      { title: "HD sound", text: "High-definition streaming for venues where audio quality matters.", plans: ["hd", "e"] },
+      { title: "Custom playlists", text: "Curators handcraft playlists around your brand story.", plans: ["e"] },
+    ],
+  },
+  {
+    name: "Manage with ease",
+    colour: "var(--red)",
+    caps: [
+      { title: "Scheduling", text: "Change music by time of day and day of week, automatically.", plans: ALL },
+      { title: "Messages", text: "Promotions at exact times or intervals. We can even record them for you.", plans: ALL },
+      { title: "Multi-location & zones", text: "Run every site and zone from one interface.", plans: ALL },
+      { title: "Users & permissions", text: "Link unlimited users with different levels of access.", plans: ALL },
+      { title: "Like & dislike", text: "Fine-tune what plays, from the mobile app.", plans: ALL },
+    ],
+  },
+  {
+    name: "Play anywhere",
+    colour: "var(--orange)",
+    caps: [
+      { title: "Web, iOS & Android", text: "Stream from a browser, or use a phone or tablet as source and remote.", plans: ALL },
+      { title: "Hardware player", text: "Plug-and-play, configured remotely, DHCP or static IP.", plans: ALL, note: "Optional hardware" },
+      { title: "15+ integrations", text: "Sonos, Crestron, Q-SYS, Control4, Bluesound and more.", plans: ALL },
+    ],
+  },
+  {
+    name: "Stay legal & supported",
+    colour: "var(--green)",
+    caps: [
+      { title: "US & Canada licensing", text: "Public performance licences included for background music.", plans: ALL },
+      { title: "Ad-free, always", text: "No ads, no interruptions to your brand experience.", plans: ALL },
+      { title: "Music Concierge", text: "Concierge, custom training and implementation help.", plans: ALL },
+      { title: "Enhanced support", text: "Priority help and dedicated account management.", plans: ["e"] },
+    ],
+  },
+];
+const PLANS = [
+  { id: "all", label: "All features" },
+  { id: "b", label: "Business" },
+  { id: "p", label: "Premium" },
+  { id: "hd", label: "Premium HD" },
+  { id: "e", label: "Enterprise" },
+];
+const planShort: Record<string, string> = { b: "B", p: "P", hd: "HD", e: "E" };
+const total = GROUPS.reduce((n, g) => n + g.caps.length, 0);
+---
+
+<div class="capmap" data-capmap>
+  <div class="cap-controls">
+    <div class="seg" role="group" aria-label="Show features included in a plan">
+      {
+        PLANS.map((p, i) => (
+          <button type="button" aria-pressed={i === 0 ? "true" : "false"} data-plan={p.id}>
+            {p.label}
+          </button>
+        ))
+      }
+    </div>
+    <p class="cap-count" aria-live="polite"><strong data-cap-count>{total}</strong> of {total} capabilities</p>
+  </div>
+  <div class="groups">
+    {
+      GROUPS.map((g) => (
+        <div class="group" style={`--c:${g.colour}`}>
+          <h3>{g.name}</h3>
+          <ul>
+            {g.caps.map((c) => (
+              <li class="cap" data-plans={c.plans.join(" ")}>
+                <span class="cap-title">{c.title}</span>
+                <span class="cap-text">{c.text}</span>
+                {c.note && <span class="cap-note">{c.note}</span>}
+                <span class="cap-plans" aria-label={`Included in: ${c.plans.map((p) => PLANS.find((x) => x.id === p)!.label).join(", ")}`}>
+                  {["b", "p", "hd", "e"].map((p) => (
+                    <i class={c.plans.includes(p as any) ? "on" : ""}>{planShort[p]}</i>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .cap-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .cap-count {
+    margin: 0;
+    color: var(--muted);
+  }
+  .cap-count strong {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+  }
+  .groups {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  }
+  .group h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    margin-bottom: 14px;
+  }
+  .group h3::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .cap {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    padding: 16px 16px 14px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--c);
+    border-radius: 14px;
+    transition:
+      opacity 0.3s,
+      transform 0.3s var(--ease),
+      filter 0.3s;
+  }
+  .cap:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  .cap.off {
+    opacity: 0.32;
+    filter: grayscale(1);
+    transform: scale(0.98);
+  }
+  .cap-title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .cap-text {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .cap-note {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .cap-plans {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .cap-plans i {
+    font-style: normal;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--paper-2);
+    color: #a9a59c;
+  }
+  .cap-plans i.on {
+    background: var(--teal-50);
+    color: var(--teal-deep);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-capmap]").forEach((root) => {
+    const btns = root.querySelectorAll<HTMLButtonElement>("[data-plan]");
+    const caps = root.querySelectorAll<HTMLElement>(".cap");
+    const count = root.querySelector<HTMLElement>("[data-cap-count]")!;
+    btns.forEach((b) =>
+      b.addEventListener("click", () => {
+        const plan = b.dataset.plan!;
+        btns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        let n = 0;
+        caps.forEach((c) => {
+          const on = plan === "all" || c.dataset.plans!.split(" ").includes(plan);
+          c.classList.toggle("off", !on);
+          if (on) n++;
+        });
+        count.textContent = String(n);
+      }),
+    );
+  });
+</script>

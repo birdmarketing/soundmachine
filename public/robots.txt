@@ -1,0 +1,5 @@
+# Staging site. Crawling is allowed on purpose so that search engines can read the
+# noindex directive (sent as an X-Robots-Tag header and a robots meta tag on every page).
+# Blocking crawling here would stop them seeing it. No sitemap is advertised on staging.
+User-agent: *
+Allow: /

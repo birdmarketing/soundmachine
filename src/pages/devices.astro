@@ -1,0 +1,261 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import IntegrationExplorer from "../components/IntegrationExplorer.astro";
+import CtaBand from "../components/CtaBand.astro";
+import Faq from "../components/Faq.astro";
+import { PLAYBACK, INTEGRATIONS } from "../data/integrations";
+import { APP } from "../data/site";
+
+const faq = [
+  {
+    q: "Do I need to buy new speakers?",
+    a: "No. SoundMachine plugs into the amplifier and speakers you already have, through a computer, a phone or tablet, a SoundMachine hardware player, or one of 15+ integrated AV platforms.",
+  },
+  {
+    q: "What does the hardware player need?",
+    a: "An internet connection, a speaker system and power. It's configured remotely and controlled from the SoundMachine app, and works with DHCP or a static IP.",
+  },
+  {
+    q: "Can I play different music in different zones?",
+    a: "Yes. Each activated zone gets its own stream. With integrated systems that support multiple zones, such as Q-SYS (up to 12 zones) or OpenAudio (8 concurrent streams), you can run separate streams from the same subscription.",
+  },
+  {
+    q: "We're an AV integrator. Can we partner with you?",
+    a: "Yes. Thousands of AV installers already work with SoundMachine. Contact our partner team to find out more.",
+  },
+];
+const icons: Record<string, string> = {
+  web: "M3 5h18v11H3zM8 20h8M12 16v4",
+  mobile: "M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2",
+  player: "M3 8h18v9H3zM7 12.5m-1.5 0a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0M12 12h6M6 17v2M18 17v2",
+};
+---
+
+<Base
+  title="Music for Business Streaming & Devices | SoundMachine"
+  description="Stream SoundMachine on web, iOS and Android, a plug-and-play hardware player, or through Sonos, Crestron, Q-SYS, Control4, Bluesound and more."
+  path="/devices"
+>
+  <PageHero
+    eyebrow="Devices & integrations"
+    title="Works with the sound system <em>you already have</em>"
+    lede="No hardware fees to get started and no rip-and-replace. Stream from a browser, use the apps, add a plug-and-play player, or control SoundMachine from your AV platform."
+  >
+    <ul class="hero-play">
+      {
+        PLAYBACK.map((p) => (
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d={icons[p.id]} />
+            </svg>
+            <div>
+              <strong>{p.name}</strong>
+              <span>{p.tagline}</span>
+            </div>
+          </li>
+        ))
+      }
+      <li class="more">
+        <strong>+ {INTEGRATIONS.length} integration partners</strong>
+        <span>Sonos · Crestron · Q-SYS · Control4 · Bluesound · Savant · RTI…</span>
+      </li>
+    </ul>
+    <div slot="actions" class="btn-row">
+      <a class="btn btn-red" href={APP.freeTrial}>Start free on the web player</a>
+      <a class="btn btn-ghost" href="#explorer">Find your setup</a>
+    </div>
+  </PageHero>
+
+  <section class="section white" id="explorer">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Integration explorer</span>
+        <h2>SoundMachine plays well with friends</h2>
+        <p>Tell us what you've got. We'll show you how SoundMachine connects, who controls it, and how many zones you can run.</p>
+      </div>
+      <IntegrationExplorer />
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="container split">
+      <div class="reveal">
+        <span class="eyebrow">Hardware player</span>
+        <h2>The plug-and-play option</h2>
+        <p class="lede">The simplest way to give every location reliable, centrally controlled music.</p>
+        <ul class="tick-list">
+          <li>Needs only internet, a speaker system and power</li>
+          <li>Configured remotely: nobody on site needs to touch it</li>
+          <li>Controlled from the SoundMachine app, even across many locations</li>
+          <li>DHCP by default, or set a static IP for managed networks</li>
+        </ul>
+      </div>
+      <div class="player-viz reveal" aria-hidden="true">
+        <div class="box">
+          <span class="led"></span>
+          <span class="brand">SOUNDMACHINE</span>
+          <span class="ports"><i></i><i></i><i></i></span>
+        </div>
+        <div class="cables">
+          <span class="cable c1"><b>Internet</b></span>
+          <span class="cable c2"><b>Amp / speakers</b></span>
+          <span class="cable c3"><b>Power</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Faq items={faq} title="Devices, answered" />
+  <CtaBand title="Music for business on any platform." text="Try SoundMachine free on the web player, then add hardware or integrations when you're ready." />
+</Base>
+
+<style>
+  .hero-play {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .hero-play li {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+  }
+  .hero-play svg {
+    width: 48px;
+    height: 48px;
+    padding: 11px;
+    border-radius: 14px;
+    background: var(--teal-50);
+    color: var(--teal-strong);
+  }
+  .hero-play div {
+    display: grid;
+  }
+  .hero-play span {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .hero-play .more {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    background: var(--night);
+    color: var(--white);
+    border-color: transparent;
+  }
+  .hero-play .more span {
+    color: #a9c2c6;
+  }
+  .player-viz {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+    padding: 40px 0;
+  }
+  .box {
+    position: relative;
+    width: min(100%, 360px);
+    height: 120px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #2b3237, #1c2125);
+    box-shadow:
+      var(--shadow-lg),
+      inset 0 1px 0 rgb(255 255 255 / 10%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    color: #8fa3a8;
+  }
+  .led {
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 12px var(--lime);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0.4;
+    }
+  }
+  .ports {
+    position: absolute;
+    bottom: -6px;
+    display: flex;
+    gap: 70px;
+  }
+  .ports i {
+    width: 22px;
+    height: 12px;
+    border-radius: 3px;
+    background: #111;
+  }
+  .cables {
+    display: flex;
+    gap: 20px;
+    margin-top: 0;
+  }
+  .cable {
+    position: relative;
+    width: 80px;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .cable::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 4px;
+    height: 80px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: repeating-linear-gradient(180deg, var(--c) 0 10px, transparent 10px 16px);
+    background-size: 4px 16px;
+    animation: down 0.8s linear infinite;
+  }
+  @keyframes down {
+    to {
+      background-position: 0 16px;
+    }
+  }
+  .cable b {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .c1 {
+    --c: var(--teal);
+  }
+  .c2 {
+    --c: var(--yellow-strong);
+  }
+  .c3 {
+    --c: var(--red);
+  }
+</style>

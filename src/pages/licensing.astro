@@ -1,0 +1,314 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import LicensingChecker from "../components/LicensingChecker.astro";
+import RightsExplainer from "../components/licensing/RightsExplainer.astro";
+import RiskCalculator from "../components/licensing/RiskCalculator.astro";
+import CoverageSim from "../components/licensing/CoverageSim.astro";
+import LimitsStrip from "../components/licensing/LimitsStrip.astro";
+import Faq from "../components/Faq.astro";
+import CtaBand from "../components/CtaBand.astro";
+import { LICENSING_FAQ, REGIONS, PROS } from "../data/licensing";
+import { LICENSING_PAGES } from "../data/licensing-pages";
+
+const payers = ["Restaurants", "Hotels & motels", "Offices", "Fitness centres", "Schools", "Residential communities", "Retail stores", "Bars", "Nightclubs", "Cafés", "Salons & spas"];
+const proLogos = (["ascap", "bmi", "sesac", "gmr", "socan", "resound"] as const).map((id) => PROS[id]);
+---
+
+<Base
+  title="Commercial Music Licensing for Business | SoundMachine"
+  description="How music licensing works for businesses in the US, Canada, the UK and beyond: what SoundMachine includes, what it doesn't, and what unlicensed music can cost."
+  path="/licensing"
+>
+  <PageHero eyebrow="Music licensing" title="Music licensing for business, <em>made simple</em>" lede="Every business that plays music needs public performance rights. Here's exactly what SoundMachine covers, where, and what you might still need to arrange.">
+    <div class="glance">
+      <p class="g-title">At a glance</p>
+      <ul>
+        {
+          REGIONS.map((r) => (
+            <li class={r.status}>
+              <span class="g-code">{r.short}</span>
+              <span class="g-name">{r.name}</span>
+              <span class="g-verdict">{r.status === "included" ? "Included" : r.status === "you-license" ? "+ TheMusicLicence" : "+ Local licence"}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="pro-row" aria-label="Licensing bodies">
+        {proLogos.map((p) => p.logo && <img src={p.logo.src} alt={p.name} width={p.logo.w} height={p.logo.h} />)}
+      </div>
+    </div>
+    <div slot="actions" class="btn-row">
+      <a class="btn btn-red" href="#checker">Check your country</a>
+      <a class="btn btn-ghost" href="#risk">What unlicensed music costs</a>
+    </div>
+  </PageHero>
+
+  <section class="section white">
+    <div class="container split">
+      <div class="reveal">
+        <span class="eyebrow">The law</span>
+        <h2>What the law says about music in business</h2>
+        <p>
+          Whether you run a coffee shop, a clothing store, a spa or a gym, you need the right licences to play music. These are called <strong>public performance rights</strong>.
+        </p>
+        <p>
+          Legally, a public performance is any music played outside your normal circle of family and friends. Even closed events count. That applies to MP3s, CDs and radio as much as streaming, and the laws are enforced by performing rights organisations: ASCAP, BMI, SESAC and GMR in the US, SOCAN and Re:Sound in Canada, and their equivalents in most countries.
+        </p>
+      </div>
+      <div class="reveal">
+        <p class="payers-title">Businesses expected to pay include</p>
+        <ul class="payers">
+          {payers.map((p) => <li>{p}</li>)}
+        </ul>
+        <div class="spotify card">
+          <span class="x" aria-hidden="true">✕</span>
+          <div>
+            <strong>Spotify, YouTube and Apple Music aren't licensed for business</strong>
+            <p>Personal streaming accounts are for private use only. Using them in a commercial space breaches copyright law and their terms.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="checker">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Coverage by country</span>
+        <h2>What's covered where you are</h2>
+        <p>Choose your country to see what SoundMachine includes and what, if anything, you need to arrange yourself.</p>
+      </div>
+      <div class="reveal"><LicensingChecker /></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">The basics</span>
+        <h2>Three kinds of music rights</h2>
+        <p>Every song carries rights in the composition and in the recording. For a business, the one that matters most is the right to perform them in public.</p>
+      </div>
+      <div class="reveal"><RightsExplainer /></div>
+    </div>
+  </section>
+
+  <section class="section-tight" id="risk">
+    <div class="container reveal"><RiskCalculator /></div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">United States</span>
+        <h2>Four PROs, one subscription</h2>
+        <p>
+          No single US PRO covers every song. A business licensing directly often needs several licences. SoundMachine includes all four for background music played through the service.
+        </p>
+      </div>
+      <div class="reveal"><CoverageSim /></div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container reveal"><LimitsStrip /></div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Guides</span>
+        <h2>Licensing guides</h2>
+      </div>
+      <ul class="guides reveal">
+        {
+          LICENSING_PAGES.map((g) => (
+            <li>
+              <a href={`/licensing/${g.slug}`}>
+                <span class="gk">{g.kind === "country" ? "Country guide" : "PRO guide"}</span>
+                <strong>{g.kind === "pro" ? g.title.split(" ")[0] : g.title.replace(/^.* in (the )?/, "")}</strong>
+                <span class="gd">{g.lede}</span>
+                <span class:list={["gv", g.verdict.tone]}>{g.verdict.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <Faq items={LICENSING_FAQ} title="Licensing questions, answered" />
+  <CtaBand title="Play it fair. Try it for free." text="Licensed background music for your business, with licensing included in the US and Canada." />
+</Base>
+
+<style>
+  .glance {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow);
+  }
+  .g-title {
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .glance ul {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .glance li {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--paper);
+  }
+  .g-code {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .g-name {
+    font-weight: 600;
+  }
+  .g-verdict {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #dff3ea;
+    color: #136b4c;
+  }
+  .you-license .g-verdict {
+    background: #fde7dc;
+    color: #a3360f;
+  }
+  .local .g-verdict {
+    background: var(--paper-2);
+    color: var(--charcoal);
+    border: 1px solid var(--line);
+  }
+  .pro-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .pro-row img {
+    height: 30px;
+    width: auto;
+    max-width: 90px;
+    object-fit: contain;
+  }
+  .payers-title {
+    font-weight: 700;
+  }
+  .payers {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .payers li {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--teal-50);
+    color: var(--teal-deep);
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .spotify {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 16px;
+    align-items: start;
+    border-color: #f2c9cc;
+    background: var(--red-50);
+  }
+  .spotify .x {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--red);
+    color: var(--white);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+  }
+  .spotify p {
+    margin: 4px 0 0;
+    color: var(--charcoal);
+  }
+  .guides {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  }
+  .guides a {
+    display: grid;
+    gap: 6px;
+    height: 100%;
+    padding: 24px;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      transform 0.25s var(--ease),
+      box-shadow 0.25s,
+      border-color 0.25s;
+  }
+  .guides a:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--teal);
+  }
+  .gk {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-strong);
+  }
+  .guides strong {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .gd {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .gv {
+    justify-self: start;
+    margin-top: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #dff3ea;
+    color: #136b4c;
+  }
+  .gv.you-license {
+    background: #fde7dc;
+    color: #a3360f;
+  }
+</style>

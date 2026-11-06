@@ -1,0 +1,331 @@
+---
+import { STRATEGIES } from "../../data/research";
+import StatValue from "./StatValue.astro";
+
+// Waveform settings per strategy visual.
+const VIZ: Record<string, { lanes: { label: string; freq: number; amp: number; colour: string; phase?: number }[]; caption: string }> = {
+  tempo: { lanes: [{ label: "Fast · 128 BPM", freq: 9, amp: 0.7, colour: "#b12b34" }, { label: "Slow · 72 BPM", freq: 4, amp: 0.7, colour: "#00909f" }], caption: "Slower tempo, slower pace" },
+  congruence: { lanes: [{ label: "Product", freq: 5, amp: 0.6, colour: "#f4dd83" }, { label: "Music", freq: 5, amp: 0.6, colour: "#00909f", phase: 0.15 }], caption: "When the music matches the product, choices follow" },
+  turnover: { lanes: [{ label: "Lunch peak · upbeat", freq: 11, amp: 0.85, colour: "#e8501d" }], caption: "Higher energy at peak" },
+  wait: { lanes: [{ label: "Familiar, mid-tempo", freq: 5, amp: 0.45, colour: "#1f9a6f" }], caption: "Pleasant sound fills the gap" },
+  brand: {
+    lanes: [
+      { label: "Chicago", freq: 6, amp: 0.6, colour: "#00909f" },
+      { label: "Austin", freq: 6, amp: 0.6, colour: "#00909f" },
+      { label: "Toronto", freq: 6, amp: 0.6, colour: "#00909f" },
+    ],
+    caption: "One sonic identity, everywhere",
+  },
+  staff: {
+    lanes: [
+      { label: "Mon", freq: 4, amp: 0.5, colour: "#00909f" },
+      { label: "Wed", freq: 6, amp: 0.6, colour: "#e8501d" },
+      { label: "Fri", freq: 8, amp: 0.7, colour: "#b12b34" },
+    ],
+    caption: "Fresh rotation through the week",
+  },
+};
+const vizData = JSON.stringify(VIZ);
+---
+
+<div class="strat" data-strat data-viz={vizData}>
+  <div class="goals" role="tablist" aria-label="Choose a business goal">
+    {
+      STRATEGIES.map((s, i) => (
+        <button type="button" role="tab" id={`goal-${s.id}`} aria-controls={`strat-${s.id}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1} data-goal={s.id} data-vizkey={s.viz}>
+          <span class="g-lever">{s.lever}</span>
+          <span class="g-goal">{s.goal}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="stage">
+    <div class="viz" aria-hidden="true">
+      <svg viewBox="0 0 600 240" preserveAspectRatio="none" data-wave></svg>
+      <p class="viz-cap" data-viz-cap></p>
+    </div>
+    {
+      STRATEGIES.map((s, i) => (
+        <div class="panel" role="tabpanel" id={`strat-${s.id}`} aria-labelledby={`goal-${s.id}`} hidden={i !== 0} data-panel={s.id}>
+          <span class="eyebrow">Sound strategy · {s.lever}</span>
+          <h3>{s.headline}</h3>
+          <p class="explain">{s.explain}</p>
+          <div class="big-stat">
+            <StatValue stat={s.stat} class="bs-value" />
+            <span class="bs-label">{s.stat.label}</span>
+            {s.stat.source && <span class="bs-src">{s.stat.source}{s.stat.status === "cited" && " · verify before launch"}</span>}
+          </div>
+          <ul class="supporting">
+            {s.supporting.map((x) => (
+              <li>
+                <StatValue stat={x} class="sup-v" />
+                <span>{x.label}</span>
+                {x.source && <em>{x.source}</em>}
+              </li>
+            ))}
+          </ul>
+          <div class="how">
+            <h4>Do it with SoundMachine</h4>
+            <ul class="tick-list">
+              {s.how.map((h) => (
+                <li>{h}</li>
+              ))}
+            </ul>
+            <a class="text-link" href={s.feature.href}>
+              {s.feature.label}
+            </a>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .strat {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  @media (min-width: 1024px) {
+    .strat {
+      grid-template-columns: 300px minmax(0, 1fr);
+      align-items: start;
+    }
+    .goals {
+      position: sticky;
+      top: 100px;
+    }
+  }
+  .goals {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  @media (min-width: 1024px) {
+    .goals {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .goals button {
+    display: grid;
+    gap: 2px;
+    text-align: left;
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 1px solid rgb(255 255 255 / 10%);
+    background: var(--night-2);
+    color: var(--white);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s,
+      transform 0.2s var(--ease);
+  }
+  .goals button:hover {
+    border-color: rgb(244 221 131 / 50%);
+  }
+  .goals button[aria-selected="true"] {
+    background: var(--yellow);
+    color: var(--ink);
+    border-color: var(--yellow);
+    transform: translateX(6px);
+  }
+  .g-lever {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .g-goal {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.15rem;
+  }
+  .stage {
+    border-radius: var(--radius-lg);
+    background: var(--night-2);
+    border: 1px solid rgb(255 255 255 / 8%);
+    overflow: hidden;
+  }
+  .viz {
+    position: relative;
+    padding: 20px 24px 0;
+    background: radial-gradient(80% 120% at 50% 0%, rgb(0 144 159 / 25%), transparent 70%);
+  }
+  .viz svg {
+    width: 100%;
+    height: 180px;
+  }
+  .viz-cap {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--yellow);
+    font-weight: 700;
+    padding-bottom: 8px;
+  }
+  .panel {
+    padding: clamp(20px, 3vw, 36px);
+    animation: fade 0.4s var(--ease);
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  .panel h3 {
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+  }
+  .explain {
+    color: #c3d6d9;
+    font-size: 1.1rem;
+    max-width: 62ch;
+  }
+  .big-stat {
+    display: grid;
+    gap: 4px;
+    margin: 24px 0;
+    padding: 22px;
+    border-radius: 18px;
+    background: rgb(0 0 0 / 22%);
+  }
+  .big-stat :global(.bs-value) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(3.2rem, 7vw, 5rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--yellow);
+  }
+  .bs-label {
+    font-size: 1.1rem;
+    color: var(--white);
+  }
+  .bs-src {
+    font-size: 0.8rem;
+    color: #8fb0b5;
+  }
+  .supporting {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+  .supporting li {
+    display: grid;
+    gap: 2px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgb(255 255 255 / 10%);
+  }
+  .supporting :global(.sup-v) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .supporting span {
+    color: #c3d6d9;
+    font-size: 0.92rem;
+  }
+  .supporting em {
+    font-style: normal;
+    font-size: 0.75rem;
+    color: #8fb0b5;
+  }
+  .how {
+    padding-top: 20px;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+  }
+  .how h4 {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8fb0b5;
+  }
+  .how .tick-list {
+    margin-bottom: 16px;
+    color: #e0ecee;
+  }
+</style>
+
+<script>
+  type Lane = { label: string; freq: number; amp: number; colour: string; phase?: number };
+  document.querySelectorAll<HTMLElement>("[data-strat]").forEach((root) => {
+    const VIZ: Record<string, { lanes: Lane[]; caption: string }> = JSON.parse(root.dataset.viz!);
+    const svg = root.querySelector<SVGSVGElement>("[data-wave]")!;
+    const cap = root.querySelector<HTMLElement>("[data-viz-cap]")!;
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-goal]"));
+    const panels = root.querySelectorAll<HTMLElement>("[data-panel]");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let current: Lane[] = [];
+    let phase = 0;
+    let raf = 0;
+    const W = 600;
+    const H = 240;
+    const draw = () => {
+      const n = current.length;
+      const laneH = H / n;
+      let html = "";
+      current.forEach((l, i) => {
+        const mid = laneH * i + laneH / 2;
+        const a = (laneH / 2) * l.amp * 0.8;
+        let d = "";
+        for (let x = 0; x <= W; x += 6) {
+          const y = mid + Math.sin((x / W) * Math.PI * 2 * l.freq + phase * (l.freq / 4) + (l.phase || 0) * Math.PI * 2) * a;
+          d += (x === 0 ? "M" : "L") + x + "," + y.toFixed(1);
+        }
+        html += `<path d="${d}" fill="none" stroke="${l.colour}" stroke-width="3.5" stroke-linecap="round" vector-effect="non-scaling-stroke" opacity="0.95"/>`;
+        html += `<text x="8" y="${(laneH * i + 18).toFixed(0)}" fill="#a9c2c6" font-size="13" font-weight="700" font-family="Figtree Variable, sans-serif">${l.label}</text>`;
+      });
+      svg.innerHTML = html;
+    };
+    const loop = () => {
+      phase += 0.05;
+      draw();
+      raf = requestAnimationFrame(loop);
+    };
+    const select = (btn: HTMLButtonElement, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t === btn;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+      });
+      if (focus) btn.focus();
+      panels.forEach((p) => (p.hidden = p.dataset.panel !== btn.dataset.goal));
+      const v = VIZ[btn.dataset.vizkey!];
+      current = v.lanes;
+      cap.textContent = v.caption;
+      draw();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t));
+      t.addEventListener("keydown", (e) => {
+        if (!["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) return;
+        e.preventDefault();
+        const dir = e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : -1;
+        select(tabs[(i + dir + tabs.length) % tabs.length], true);
+      });
+    });
+    select(tabs[0]);
+    if (!reduced) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting && !raf) loop();
+          if (!e.isIntersecting && raf) {
+            cancelAnimationFrame(raf);
+            raf = 0;
+          }
+        });
+      });
+      io.observe(svg);
+    }
+  });
+</script>

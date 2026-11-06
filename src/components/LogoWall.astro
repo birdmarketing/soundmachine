@@ -1,0 +1,97 @@
+---
+import { CLIENT_LOGOS } from "../data/site";
+interface Props {
+  title?: string;
+  tone?: "light" | "dark";
+}
+const { title = "Trusted by brands that care how they sound", tone = "light" } = Astro.props;
+const logos = [...CLIENT_LOGOS, ...CLIENT_LOGOS];
+---
+
+<section class:list={["logos", tone]} aria-label="Selected SoundMachine clients">
+  <div class="container">
+    <p class="title">{title}</p>
+  </div>
+  <div class="marquee">
+    <ul class="track">
+      {
+        logos.map((l, i) => (
+          <li aria-hidden={i >= CLIENT_LOGOS.length ? "true" : undefined}>
+            <img src={l.src} alt={i >= CLIENT_LOGOS.length ? "" : l.name} width={l.w} height={l.h} loading="lazy" decoding="async" />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .logos {
+    padding: clamp(32px, 5vw, 56px) 0;
+    overflow: hidden;
+  }
+  .title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+  .track {
+    display: flex;
+    align-items: center;
+    gap: clamp(40px, 6vw, 80px);
+    width: max-content;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    animation: scroll 48s linear infinite;
+  }
+  .marquee:hover .track {
+    animation-play-state: paused;
+  }
+  .track img {
+    height: 34px;
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
+    filter: grayscale(1) contrast(1.1);
+    opacity: 0.7;
+    mix-blend-mode: multiply;
+    transition:
+      opacity 0.2s,
+      filter 0.2s;
+  }
+  .track img:hover {
+    opacity: 1;
+    filter: none;
+  }
+  .dark .title {
+    color: #8fb0b5;
+  }
+  .dark .track img {
+    filter: grayscale(1) invert(1) brightness(1.4);
+    mix-blend-mode: screen;
+  }
+  @keyframes scroll {
+    to {
+      transform: translateX(calc(-50% - clamp(20px, 3vw, 40px)));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      animation: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: auto;
+    }
+    .track li[aria-hidden="true"] {
+      display: none;
+    }
+  }
+</style>

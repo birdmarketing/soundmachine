@@ -1,0 +1,251 @@
+---
+// Target tempo across the trading day, by industry. Illustrative curves built in SoundMachine schedules.
+import { INDUSTRY_CURVES } from "../../data/research";
+import StatValue from "./StatValue.astro";
+const W = 720;
+const H = 300;
+const PAD = { l: 44, r: 16, t: 34, b: 34 };
+const H0 = 6;
+const H1 = 24;
+const B0 = 55;
+const B1 = 140;
+const x = (h: number) => PAD.l + ((h - H0) / (H1 - H0)) * (W - PAD.l - PAD.r);
+const y = (b: number) => PAD.t + (1 - (b - B0) / (B1 - B0)) * (H - PAD.t - PAD.b);
+const pathFor = (pts: number[]) => {
+  const p = pts.map((b, i) => [x(H0 + i), y(b)]);
+  // Catmull-Rom → Bézier for a smooth curve.
+  let d = `M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;
+  for (let i = 0; i < p.length - 1; i++) {
+    const p0 = p[i - 1] || p[i];
+    const p1 = p[i];
+    const p2 = p[i + 1];
+    const p3 = p[i + 2] || p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+};
+const curves = INDUSTRY_CURVES.map((c) => ({
+  ...c,
+  d: pathFor(c.points),
+  marks: c.moments.map((m) => ({ ...m, cx: x(m.hour), cy: y(c.points[m.hour - H0]) })),
+}));
+const hours = [6, 9, 12, 15, 18, 21, 24];
+const bpms = [60, 80, 100, 120, 140];
+---
+
+<div class="curves" data-curves>
+  <div class="seg" role="tablist" aria-label="Choose an industry">
+    {
+      curves.map((c, i) => (
+        <button type="button" role="tab" aria-selected={i === 0 ? "true" : "false"} aria-controls={`curve-${c.id}`} id={`curve-tab-${c.id}`} tabindex={i === 0 ? 0 : -1} data-curve={c.id}>
+          {c.name}
+        </button>
+      ))
+    }
+  </div>
+  <div class="chart-wrap">
+    <svg viewBox={`0 0 ${W} ${H}`} class="chart" role="img" aria-label="Target music tempo by hour of the day for the selected industry">
+      <g class="grid">
+        {
+          bpms.map((b) => (
+            <g>
+              <line x1={PAD.l} x2={W - PAD.r} y1={y(b)} y2={y(b)} />
+              <text x={PAD.l - 8} y={y(b) + 4} text-anchor="end">
+                {b}
+              </text>
+            </g>
+          ))
+        }
+        {
+          hours.map((h) => (
+            <text x={x(h)} y={H - 10} text-anchor="middle">
+              {String(h % 24).padStart(2, "0")}:00
+            </text>
+          ))
+        }
+        <text x={PAD.l - 8} y={12} text-anchor="end" class="unit">BPM</text>
+      </g>
+      {
+        curves.map((c, i) => (
+          <g class="curve" data-curve-g={c.id} style={i === 0 ? "" : "display:none"}>
+            <path d={`${c.d} L${x(H1)},${H - PAD.b} L${x(H0)},${H - PAD.b} Z`} class="area" />
+            <path d={c.d} class="line" pathLength="1" />
+            {c.marks.map((m) => (
+              <circle cx={m.cx} cy={m.cy} r="6" class="mk" />
+            ))}
+          </g>
+        ))
+      }
+    </svg>
+  </div>
+  {
+    curves.map((c, i) => (
+      <div class="detail" role="tabpanel" id={`curve-${c.id}`} aria-labelledby={`curve-tab-${c.id}`} hidden={i !== 0} data-curve-panel={c.id}>
+        <ol class="moments">
+          {c.moments.map((m) => (
+            <li>
+              <span class="t">{String(m.hour).padStart(2, "0")}:00</span>
+              <span>{m.label}</span>
+            </li>
+          ))}
+        </ol>
+        <ul class="cstats">
+          {c.stats.map((s) => (
+            <li>
+              <StatValue stat={s} class="cs-v" />
+              <span>{s.label}</span>
+              {s.source && <em>{s.source}</em>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .curves {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .chart-wrap {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: clamp(12px, 2vw, 24px);
+    overflow-x: auto;
+  }
+  .chart {
+    width: 100%;
+    min-width: 560px;
+    height: auto;
+  }
+  .grid line {
+    stroke: var(--line);
+  }
+  .grid text {
+    font-size: 12px;
+    fill: var(--muted);
+    font-family: var(--font-body);
+  }
+  .grid .unit {
+    font-weight: 700;
+  }
+  .area {
+    fill: rgb(0 144 159 / 10%);
+  }
+  .line {
+    fill: none;
+    stroke: var(--teal-strong);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.2s var(--ease) forwards;
+  }
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .mk {
+    fill: var(--yellow);
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+  .detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  @media (min-width: 900px) {
+    .detail {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+  }
+  .moments {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .moments li {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .moments .t {
+    font-weight: 800;
+    color: var(--teal-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .cstats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .cstats li {
+    display: grid;
+    gap: 2px;
+    padding: 18px;
+    border-radius: 16px;
+    background: var(--night);
+    color: #d6e5e7;
+  }
+  .cstats :global(.cs-v) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.2rem;
+    line-height: 1.1;
+    color: var(--yellow);
+  }
+  .cstats em {
+    font-style: normal;
+    font-size: 0.78rem;
+    color: #8fb0b5;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-curves]").forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-curve]"));
+    const show = (id: string, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t.dataset.curve === id;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      root.querySelectorAll<SVGGElement>("[data-curve-g]").forEach((g) => {
+        const on = g.dataset.curveG === id;
+        g.style.display = on ? "" : "none";
+        if (on) {
+          // Restart the draw animation.
+          const line = g.querySelector<SVGPathElement>(".line")!;
+          line.style.animation = "none";
+          void line.getBoundingClientRect();
+          line.style.animation = "";
+        }
+      });
+      root.querySelectorAll<HTMLElement>("[data-curve-panel]").forEach((p) => (p.hidden = p.dataset.curvePanel !== id));
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => show(t.dataset.curve!));
+      t.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+        e.preventDefault();
+        show(tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length].dataset.curve!, true);
+      });
+    });
+  });
+</script>

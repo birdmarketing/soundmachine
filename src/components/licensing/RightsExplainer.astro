@@ -1,0 +1,184 @@
+---
+import { RIGHTS } from "../../data/licensing";
+interface Props {
+  region?: "us" | "ca" | "uk";
+}
+const { region } = Astro.props;
+// Who licenses public performance of each part of a song, where the split is clear-cut.
+const SPLIT: Record<string, { composition: string; recording: string } | undefined> = {
+  ca: { composition: "SOCAN", recording: "Re:Sound" },
+  uk: { composition: "PRS for Music", recording: "PPL" },
+};
+const split = region ? SPLIT[region] : undefined;
+---
+
+<div class="rights">
+  <div class="song" aria-hidden="true">
+    <div class="disc">
+      <span class="half comp">Composition<small>melody &amp; lyrics</small></span>
+      <span class="half rec">Recording<small>the performance</small></span>
+    </div>
+    {
+      split && (
+        <div class="who">
+          <span class="comp-who">{split.composition}</span>
+          <span class="rec-who">{split.recording}</span>
+        </div>
+      )
+    }
+  </div>
+  <ol class="cards">
+    {
+      RIGHTS.map((r, i) => (
+        <li class:list={["r", r.id]}>
+          <span class="num">{i + 1}</span>
+          <h4>{r.name}</h4>
+          <p>{r.covers}</p>
+          <span class="who-line">{r.who}</span>
+        </li>
+      ))
+    }
+  </ol>
+  {
+    split && (
+      <p class="split-note">
+        In {region === "uk" ? "the UK" : "Canada"}, public performance of the <strong>composition</strong> is licensed by {split.composition}, and the <strong>recording</strong> by{" "}
+        {split.recording}.{region === "uk" ? " The two are combined in one licence, TheMusicLicence, from PPL PRS Ltd." : " SoundMachine includes both for background music."}
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .rights {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .rights {
+      grid-template-columns: 300px 1fr;
+    }
+    .split-note {
+      grid-column: 1 / -1;
+    }
+  }
+  .song {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+  }
+  .disc {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    box-shadow: var(--shadow);
+  }
+  .disc::after {
+    content: "";
+    position: absolute;
+    inset: 42%;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: 0 0 0 10px rgb(0 0 0 / 10%);
+  }
+  .half {
+    display: grid;
+    align-content: center;
+    gap: 2px;
+    padding: 0 16px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--white);
+  }
+  .half small {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+  .comp {
+    background: var(--teal-strong);
+    text-align: left;
+  }
+  .rec {
+    background: var(--red);
+    text-align: right;
+  }
+  .who {
+    display: flex;
+    gap: 10px;
+  }
+  .who span {
+    font-weight: 800;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: var(--white);
+  }
+  .comp-who {
+    background: var(--teal-strong);
+  }
+  .rec-who {
+    background: var(--red);
+  }
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  .r {
+    position: relative;
+    padding: 18px 20px 18px 66px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+  }
+  .r.performance {
+    border: 2px solid var(--teal);
+    background: var(--teal-50);
+  }
+  .num {
+    position: absolute;
+    left: 18px;
+    top: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    background: var(--paper-2);
+  }
+  .performance .num {
+    background: var(--teal-strong);
+    color: var(--white);
+  }
+  .r h4 {
+    margin: 4px 0 4px;
+  }
+  .r p {
+    margin: 0 0 6px;
+    color: var(--charcoal);
+    font-size: 0.95rem;
+  }
+  .who-line {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .split-note {
+    margin: 0;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: var(--paper-2);
+  }
+</style>

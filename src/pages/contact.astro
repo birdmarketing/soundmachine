@@ -1,0 +1,323 @@
+---
+import Base from "../layouts/Base.astro";
+import { APP, OFFICES } from "../data/site";
+---
+
+<Base
+  title="Contact Us | SoundMachine"
+  description="Get in touch with SoundMachine for sales, demos, enterprise solutions, partnerships or support."
+  path="/contact"
+>
+  <section class="contact">
+    <div class="container grid-c">
+      <div class="intro">
+        <span class="eyebrow">Contact us</span>
+        <h1>Let's make your business sound great</h1>
+        <p class="lede">Questions about plans, licensing or integrations? Want a walkthrough for your locations? We're here to help.</p>
+
+        <ul class="routes">
+          <li>
+            <span class="r-ic" aria-hidden="true">📅</span>
+            <div>
+              <strong>Book a demo</strong>
+              <span>Pick a time with our team that suits you.</span>
+              <a href={APP.demo} rel="noopener">Open the booking calendar ↗</a>
+            </div>
+          </li>
+          <li>
+            <span class="r-ic" aria-hidden="true">🛟</span>
+            <div>
+              <strong>Customer support</strong>
+              <span>Already a customer? Our support team can help.</span>
+              <a href={`mailto:${APP.helpEmail}`}>{APP.helpEmail}</a>
+            </div>
+          </li>
+          <li>
+            <span class="r-ic" aria-hidden="true">🤝</span>
+            <div>
+              <strong>AV installers &amp; partners</strong>
+              <span>Join the thousands of installers who work with SoundMachine.</span>
+              <a href={`mailto:${APP.partnerEmail}`}>{APP.partnerEmail}</a>
+            </div>
+          </li>
+        </ul>
+
+        <div class="offices">
+          {
+            OFFICES.map((o) => (
+              <address>
+                <strong>{o.city}</strong>
+                {o.lines.map((l) => (
+                  <span>{l}</span>
+                ))}
+              </address>
+            ))
+          }
+        </div>
+      </div>
+
+      <form class="form card" data-contact novalidate>
+        <h2>Send us a message</h2>
+        <p class="muted small">Fields marked * are required. This prepares an email in your mail app for you to review and send. Nothing is sent from this page.</p>
+        <div class="row">
+          <label>
+            <span>Name *</span>
+            <input name="name" required autocomplete="name" />
+          </label>
+          <label>
+            <span>Work email *</span>
+            <input name="email" type="email" required autocomplete="email" />
+          </label>
+        </div>
+        <div class="row">
+          <label>
+            <span>Company</span>
+            <input name="company" autocomplete="organization" />
+          </label>
+          <label>
+            <span>Number of locations</span>
+            <select name="locations">
+              <option>1</option>
+              <option>2–9</option>
+              <option>10–49</option>
+              <option>50+</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label>
+            <span>Country</span>
+            <select name="country">
+              <option>United States</option>
+              <option>Canada</option>
+              <option>United Kingdom</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <fieldset>
+            <legend>I'm interested in</legend>
+            <div class="chips">
+              {
+                ["A demo", "Enterprise", "Licensing", "Integrations"].map((t, i) => (
+                  <label class="chip-check">
+                    <input type="checkbox" name="interest" value={t} checked={i === 0} />
+                    <span>{t}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+        </div>
+        <label>
+          <span>Message *</span>
+          <textarea name="message" rows="5" required placeholder="Tell us about your business and what you'd like to achieve with music."></textarea>
+        </label>
+        <p class="err" data-err role="alert" hidden></p>
+        <button class="btn btn-red" type="submit">Prepare email</button>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact {
+    padding: clamp(48px, 7vw, 104px) 0 var(--section);
+    background:
+      radial-gradient(50% 40% at 90% 10%, rgb(0 144 159 / 12%), transparent 70%),
+      radial-gradient(40% 40% at 0% 100%, rgb(244 221 131 / 30%), transparent 70%);
+  }
+  .grid-c {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(32px, 5vw, 72px);
+  }
+  @media (min-width: 1024px) {
+    .grid-c {
+      grid-template-columns: 0.9fr 1.1fr;
+      align-items: start;
+    }
+  }
+  .intro h1 {
+    font-size: clamp(2.4rem, 5vw, 4rem);
+  }
+  .routes {
+    list-style: none;
+    margin: 32px 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  .routes li {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 18px;
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .r-ic {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--teal-50);
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+  }
+  .routes div {
+    display: grid;
+    gap: 2px;
+  }
+  .routes span {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .routes a {
+    font-weight: 700;
+  }
+  .offices {
+    display: flex;
+    gap: 40px;
+  }
+  address {
+    font-style: normal;
+    display: grid;
+    color: var(--muted);
+  }
+  address strong {
+    color: var(--ink);
+  }
+  .form {
+    display: grid;
+    gap: 16px;
+    padding: clamp(24px, 4vw, 44px);
+    box-shadow: var(--shadow);
+  }
+  .form h2 {
+    font-size: 1.8rem;
+    margin: 0;
+  }
+  .row {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 640px) {
+    .row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  label,
+  fieldset {
+    display: grid;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  legend {
+    padding: 0;
+    margin-bottom: 6px;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--white);
+    font-weight: 400;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--teal-strong);
+    box-shadow: 0 0 0 4px var(--teal-100);
+  }
+  [aria-invalid="true"] {
+    border-color: var(--red);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip-check {
+    position: relative;
+    display: inline-flex;
+  }
+  .chip-check input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    cursor: pointer;
+  }
+  .chip-check span {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .chip-check input:checked + span {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+  }
+  .chip-check input:focus-visible + span {
+    outline: 3px solid var(--yellow-strong);
+    outline-offset: 2px;
+  }
+  .err {
+    margin: 0;
+    color: var(--red);
+    font-weight: 600;
+  }
+  .form .btn {
+    justify-self: start;
+  }
+</style>
+
+<script>
+  import { APP } from "../data/site";
+  const form = document.querySelector<HTMLFormElement>("[data-contact]");
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const err = form.querySelector<HTMLElement>("[data-err]")!;
+    const required = ["name", "email", "message"];
+    const missing = required.filter((k) => !String(data.get(k) || "").trim());
+    const email = String(data.get("email") || "");
+    form.querySelectorAll("input, textarea").forEach((el) => el.removeAttribute("aria-invalid"));
+    missing.forEach((k) => form.querySelector(`[name="${k}"]`)?.setAttribute("aria-invalid", "true"));
+    if (missing.length || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      if (!missing.includes("email") && email) form.querySelector('[name="email"]')?.setAttribute("aria-invalid", "true");
+      err.textContent = "Please add your name, a valid email address and a message.";
+      err.hidden = false;
+      return;
+    }
+    err.hidden = true;
+    const interests = data.getAll("interest").join(", ") || "General enquiry";
+    const subject = `SoundMachine enquiry: ${interests}`;
+    const body = [
+      `Name: ${data.get("name")}`,
+      `Email: ${email}`,
+      `Company: ${data.get("company") || "-"}`,
+      `Locations: ${data.get("locations")}`,
+      `Country: ${data.get("country")}`,
+      `Interested in: ${interests}`,
+      "",
+      String(data.get("message")),
+    ].join("\n");
+    window.location.href = `mailto:${APP.salesEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
+</script>

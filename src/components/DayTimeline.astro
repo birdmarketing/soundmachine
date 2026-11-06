@@ -1,0 +1,437 @@
+---
+// "A day with SoundMachine": scrub through a trading day and watch schedules,
+// zones, messages and energy work together. Fictional café, illustrative data.
+import { artStyle } from "../data/demo";
+
+const START = 6;
+const END = 23;
+const span = END - START;
+const pct = (h: number) => ((h - START) / span) * 100;
+
+const counter = [
+  { s: 6.5, e: 9.5, name: "Acoustic Morning", art: 0, energy: 2, why: "Soft acoustic while the team opens up and the first regulars arrive." },
+  { s: 9.5, e: 11.5, name: "Indie Bright", art: 7, energy: 3, why: "Brighter indie lifts the room as the mid-morning crowd builds." },
+  { s: 11.5, e: 14, name: "Lunch Rush Mix", art: 1, energy: 4, why: "An upbeat mix is scheduled to keep the lunch queue moving." },
+  { s: 14, e: 17, name: "Soul Kitchen", art: 3, energy: 2, why: "Mellow soul encourages laptop workers and longer afternoon stays." },
+  { s: 17, e: 20, name: "Latin Café", art: 11, energy: 3, why: "Warm Latin rhythms for the after-work crowd." },
+  { s: 20, e: 22, name: "Eclectic Lounge", art: 8, energy: 2, why: "Lounge at a lower volume as the café winds down before close." },
+];
+const patio = [
+  { s: 11, e: 17, name: "Acoustic Pop", art: 0 },
+  { s: 17, e: 20, name: "Rooftop Sunset", art: 9 },
+];
+const messages = [
+  { h: 8, text: "Try our new oat flat white", kind: "Promo" },
+  { h: 10, text: "Try our new oat flat white", kind: "Promo" },
+  { h: 15, text: "Order ahead in the Harbour app", kind: "Promo" },
+  { h: 16, text: "Happy hour: 2-for-1 iced drinks until 6pm", kind: "Promo" },
+  { h: 16.5, text: "Happy hour: 2-for-1 iced drinks until 6pm", kind: "Promo" },
+  { h: 17, text: "Happy hour: 2-for-1 iced drinks until 6pm", kind: "Promo" },
+  { h: 17.5, text: "Happy hour: 2-for-1 iced drinks until 6pm", kind: "Promo" },
+  { h: 21.75, text: "We close in 15 minutes. Thank you for visiting!", kind: "Announcement" },
+];
+
+// Energy curve path across the counter schedule (0–5 scale → svg y).
+const W = 1000;
+const H = 120;
+const energyAt = (h: number) => counter.find((b) => h >= b.s && h < b.e)?.energy ?? 0;
+const pts: [number, number][] = [];
+for (let h = START; h <= END; h += 0.25) pts.push([(pct(h) / 100) * W, H - (energyAt(h) / 5) * (H - 16) - 8]);
+// Smooth with a simple moving average for a softer curve.
+const smooth = pts.map((p, i) => {
+  const win = pts.slice(Math.max(0, i - 3), i + 4);
+  return [p[0], win.reduce((a, q) => a + q[1], 0) / win.length] as [number, number];
+});
+const path = "M" + smooth.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" L");
+const area = `${path} L${W},${H} L0,${H} Z`;
+const hours = [6, 8, 10, 12, 14, 16, 18, 20, 22];
+const data = JSON.stringify({ START, END, counter, patio, messages });
+---
+
+<div class="day" data-day-timeline data-config={data}>
+  <div class="day-grid">
+    <div class="tracks">
+      <div class="controls">
+        <button type="button" class="btn btn-sm btn-teal" data-play-day aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"></path></svg>
+          <span data-play-label>Play the day</span>
+        </button>
+        <span class="hint">or drag the slider under the timeline</span>
+      </div>
+      <div class="lane-labels" aria-hidden="true">
+        <span>Energy</span>
+        <span>Counter zone</span>
+        <span>Patio zone</span>
+        <span>Messages</span>
+      </div>
+      <div class="lanes">
+        <svg class="curve" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="dayfill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#f4dd83" stop-opacity="0.7"></stop>
+              <stop offset="1" stop-color="#f4dd83" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#dayfill)"></path>
+          <path d={path} fill="none" stroke="#e8501d" stroke-width="3" vector-effect="non-scaling-stroke"></path>
+        </svg>
+        <div class="lane" aria-hidden="true">
+          {counter.map((b) => <span class="seg" style={`left:${pct(b.s)}%;width:${pct(b.e) - pct(b.s)}%;${artStyle(b.art)}`} title={b.name} />)}
+        </div>
+        <div class="lane" aria-hidden="true">
+          {patio.map((b) => <span class="seg" style={`left:${pct(b.s)}%;width:${pct(b.e) - pct(b.s)}%;${artStyle(b.art)}`} title={b.name} />)}
+          <span class="closed" style={`left:0;width:${pct(11)}%`}>Closed</span>
+          <span class="closed" style={`left:${pct(20)}%;right:0`}>Closed</span>
+        </div>
+        <div class="lane msgs" aria-hidden="true">
+          {messages.map((m) => <span class={`pin ${m.kind === "Announcement" ? "ann" : ""}`} style={`left:${pct(m.h)}%`} title={m.text} />)}
+        </div>
+        <div class="playhead" data-playhead aria-hidden="true"><span data-playhead-time>13:00</span></div>
+        <div class="hours" aria-hidden="true">
+          {hours.map((h) => <span style={`left:${pct(h)}%`}>{String(h).padStart(2, "0")}:00</span>)}
+        </div>
+      </div>
+      <div class="scrub">
+        <label for="day-scrub" class="sr-only">Time of day</label>
+        <input id="day-scrub" type="range" min={START} max={END} step="0.25" value="12.5" data-scrub />
+      </div>
+    </div>
+
+    <aside class="status card" aria-live="polite">
+      <div class="st-time">
+        <span class="clock" data-clock>12:30</span>
+        <span class="st-place">Harbour Coffee · Main St</span>
+      </div>
+      <div class="st-now">
+        <span class="st-art" data-st-art></span>
+        <div>
+          <span class="st-label">Counter is playing</span>
+          <strong data-st-station>Lunch Rush Mix</strong>
+          <span class="st-energy" data-st-energy aria-label="Energy level"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+      <p class="st-why" data-st-why></p>
+      <dl class="st-list">
+        <div><dt>Patio</dt><dd data-st-patio>Acoustic Pop</dd></div>
+        <div><dt>Next message</dt><dd data-st-msg>—</dd></div>
+        <div><dt>Feature at work</dt><dd data-st-feature>Schedules</dd></div>
+      </dl>
+    </aside>
+  </div>
+</div>
+
+<style>
+  .day-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  @media (min-width: 1024px) {
+    .day-grid {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      align-items: stretch;
+    }
+  }
+  .tracks {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: clamp(16px, 2.5vw, 28px);
+    box-shadow: var(--shadow-sm);
+  }
+  .lane-labels {
+    display: none;
+  }
+  .lanes {
+    position: relative;
+    display: grid;
+    grid-template-rows: 120px 44px 44px 30px 22px;
+    gap: 8px;
+  }
+  @media (min-width: 720px) {
+    .tracks {
+      grid-template-columns: 110px 1fr;
+    }
+    .lane-labels {
+      display: grid;
+      grid-template-rows: 120px 44px 44px 30px;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .scrub {
+      grid-column: 2;
+    }
+  }
+  .curve {
+    width: 100%;
+    height: 120px;
+    border-radius: 12px;
+    background: repeating-linear-gradient(180deg, transparent 0 23px, var(--paper-2) 23px 24px);
+  }
+  .lane {
+    position: relative;
+    border-radius: 10px;
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .seg {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-right: 2px solid var(--white);
+  }
+  .closed {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: repeating-linear-gradient(135deg, var(--paper) 0 8px, var(--paper-2) 8px 16px);
+  }
+  .msgs {
+    background: transparent;
+    overflow: visible;
+    border-top: 1px dashed var(--line-strong);
+    border-radius: 0;
+  }
+  .pin {
+    position: absolute;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--red);
+    box-shadow: 0 0 0 3px var(--white);
+  }
+  .pin.ann {
+    background: var(--teal-strong);
+  }
+  .hours {
+    position: relative;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .hours span {
+    position: absolute;
+    transform: translateX(-50%);
+  }
+  .hours span:first-child {
+    transform: none;
+  }
+  @media (max-width: 719px) {
+    .hours span:nth-child(even) {
+      display: none;
+    }
+  }
+  .playhead {
+    position: absolute;
+    top: -6px;
+    bottom: 26px;
+    width: 2px;
+    background: var(--ink);
+    left: 0;
+    pointer-events: none;
+    transition: left 0.12s linear;
+  }
+  .playhead span {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--white);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    grid-column: 1 / -1;
+  }
+  .hint {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  /* Widen the range by the thumb's radius so the thumb centre lines up with the playhead. */
+  .scrub input {
+    display: block;
+    width: calc(100% + 22px);
+    margin: 0 -11px;
+  }
+  .status {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+  .st-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .clock {
+    font-family: var(--font-display);
+    font-size: 2.6rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .st-place {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .st-now {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+  .st-art {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    transition: background 0.3s;
+  }
+  .st-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .st-now strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+  .st-energy {
+    display: flex;
+    gap: 3px;
+    margin-top: 6px;
+  }
+  .st-energy i {
+    width: 22px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--line);
+    transition: background-color 0.3s;
+  }
+  .st-energy i.on {
+    background: var(--orange);
+  }
+  .st-why {
+    margin: 0;
+    color: var(--charcoal);
+    min-height: 3.2em;
+  }
+  .st-list {
+    margin: 0;
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+  .st-list div {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.9rem;
+  }
+  .st-list dt {
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .st-list dd {
+    margin: 0;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  import { artStyle } from "../data/demo";
+  type Cfg = {
+    START: number;
+    END: number;
+    counter: { s: number; e: number; name: string; art: number; energy: number; why: string }[];
+    patio: { s: number; e: number; name: string; art: number }[];
+    messages: { h: number; text: string; kind: string }[];
+  };
+  document.querySelectorAll<HTMLElement>("[data-day-timeline]").forEach((root) => {
+    const cfg: Cfg = JSON.parse(root.dataset.config!);
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const scrub = $("[data-scrub]") as HTMLInputElement;
+    const playBtn = $("[data-play-day]");
+    const playLabel = $("[data-play-label]");
+    const fmt = (h: number) => `${String(Math.floor(h)).padStart(2, "0")}:${String(Math.round((h % 1) * 60)).padStart(2, "0")}`;
+
+    const render = () => {
+      const h = Number(scrub.value);
+      const p = ((h - cfg.START) / (cfg.END - cfg.START)) * 100;
+      $("[data-playhead]").style.left = `${p}%`;
+      $("[data-playhead-time]").textContent = fmt(h);
+      $("[data-clock]").textContent = fmt(h);
+      const blk = cfg.counter.find((b) => h >= b.s && h < b.e);
+      const pat = cfg.patio.find((b) => h >= b.s && h < b.e);
+      const next = cfg.messages.find((m) => m.h >= h);
+      const recentMsg = cfg.messages.find((m) => Math.abs(m.h - h) < 0.13);
+      $("[data-st-station]").textContent = blk ? blk.name : "Closed";
+      $("[data-st-art]").setAttribute("style", blk ? artStyle(blk.art) : "background: var(--paper-2)");
+      $("[data-st-why]").textContent = blk ? blk.why : "Before opening and after close, players sit idle. Schedules start them automatically.";
+      root.querySelectorAll("[data-st-energy] i").forEach((el, i) => el.classList.toggle("on", !!blk && i < blk.energy));
+      $("[data-st-patio]").textContent = pat ? pat.name : "Closed";
+      $("[data-st-msg]").textContent = next ? `${fmt(next.h)}: ${next.text}` : "None until tomorrow";
+      let feature = "Schedules";
+      if (recentMsg) feature = "Messages";
+      else if (pat && blk && pat.name !== blk.name) feature = "Zones: two streams, one account";
+      else if (!blk) feature = "Automatic start and stop";
+      $("[data-st-feature]").textContent = feature;
+    };
+    scrub.addEventListener("input", render);
+    render();
+
+    let timer = 0;
+    const stop = () => {
+      window.clearInterval(timer);
+      timer = 0;
+      playBtn.setAttribute("aria-pressed", "false");
+      playLabel.textContent = "Play the day";
+    };
+    playBtn.addEventListener("click", () => {
+      if (timer) return stop();
+      if (Number(scrub.value) >= cfg.END) scrub.value = String(cfg.START);
+      playBtn.setAttribute("aria-pressed", "true");
+      playLabel.textContent = "Pause";
+      timer = window.setInterval(() => {
+        const v = Number(scrub.value) + 0.25;
+        scrub.value = String(Math.min(v, cfg.END));
+        scrub.dispatchEvent(new Event("input"));
+        if (v >= cfg.END) stop();
+      }, 160);
+    });
+  });
+</script>

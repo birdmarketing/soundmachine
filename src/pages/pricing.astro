@@ -1,0 +1,295 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import PricingTable from "../components/PricingTable.astro";
+import LogoWall from "../components/LogoWall.astro";
+import Faq from "../components/Faq.astro";
+import CtaBand from "../components/CtaBand.astro";
+import { PLANS, MATRIX, PRICING_FAQ } from "../data/pricing";
+const paid = PLANS.filter((p) => p.monthly !== null);
+const calcData = JSON.stringify(paid.map((p) => ({ id: p.id, name: p.name, monthly: p.monthly, annual: p.annual })));
+---
+
+<Base
+  title="Music for Business Pricing Made Easy | SoundMachine"
+  description="Simple per-location pricing for licensed background music. Business from $26.95 a month. Annual plans save 10%. Free trial, no credit card required."
+  path="/pricing"
+>
+  <PageHero eyebrow="Pricing" title="Pricing plans" lede="Try the free trial today, no credit card required. One licence per location, month-to-month or annual." align="center" />
+
+  <section class="section-tight pricing-sec">
+    <div class="container">
+      <PricingTable />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="calc reveal" data-calc data-plans={calcData}>
+        <div class="calc-in">
+          <span class="eyebrow">Cost calculator</span>
+          <h2>What will it cost for your business?</h2>
+          <label class="field">
+            <span>Locations: <strong data-loc-out>3</strong></span>
+            <input type="range" min="1" max="60" value="3" data-loc aria-label="Number of locations" />
+          </label>
+          <div class="field">
+            <span>Plan</span>
+            <div class="seg" role="group" aria-label="Plan">
+              {
+                paid.map((p, i) => (
+                  <button type="button" aria-pressed={i === 1 ? "true" : "false"} data-calc-plan={p.id}>
+                    {p.name.replace("Business ", "")}
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+          <div class="field">
+            <span>Billing</span>
+            <div class="seg" role="group" aria-label="Billing">
+              <button type="button" aria-pressed="false" data-calc-bill="monthly">Monthly</button>
+              <button type="button" aria-pressed="true" data-calc-bill="annual">Annual (save 10%)</button>
+            </div>
+          </div>
+        </div>
+        <div class="calc-out" aria-live="polite">
+          <div class="o-main">
+            <span>Per month</span>
+            <strong data-o-month>$101.85</strong>
+          </div>
+          <dl>
+            <div><dt>Per year</dt><dd data-o-year>$1,222.20</dd></div>
+            <div><dt>You save vs monthly</dt><dd data-o-save>$180.00</dd></div>
+            <div><dt>Per location, per month</dt><dd data-o-unit>$33.95</dd></div>
+          </dl>
+          <p class="volume" data-o-volume hidden>10+ locations qualify for tiered volume pricing. <a href="/contact">Talk to sales</a> for a quote.</p>
+          <p class="o-note">
+            In the US, licensing ASCAP, BMI, SESAC and GMR directly can cost over $1,000 per location per year. SoundMachine includes them for background music.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Compare plans</span>
+        <h2>Every feature, side by side</h2>
+      </div>
+      <div class="table-wrap reveal">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Feature</span></th>
+              {PLANS.map((p) => <th scope="col">{p.name}</th>)}
+            </tr>
+          </thead>
+          {
+            MATRIX.map((g) => (
+              <tbody>
+                <tr class="grp">
+                  <th colspan={PLANS.length + 1} scope="colgroup">
+                    {g.group}
+                  </th>
+                </tr>
+                {g.rows.map((r) => (
+                  <tr>
+                    <th scope="row">{r.label}</th>
+                    {r.values.map((v) => (
+                      <td>
+                        {v === true ? (
+                          <span class="yes" aria-label="Included">
+                            ✓
+                          </span>
+                        ) : v === false ? (
+                          <span class="no" aria-label="Not included">
+                            –
+                          </span>
+                        ) : (
+                          <span class="val">{v}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            ))
+          }
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <LogoWall title="Trusted by companies worldwide to set the tone" />
+  <Faq items={PRICING_FAQ} title="Pricing questions" />
+  <CtaBand title="Make your brand sound special." text="Licensed for business. Try it for free." />
+</Base>
+
+<style>
+  .pricing-sec {
+    padding-top: 0;
+  }
+  .calc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  @media (min-width: 900px) {
+    .calc {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+  }
+  .calc-in {
+    padding: clamp(24px, 4vw, 48px);
+    background: var(--white);
+  }
+  .calc-in h2 {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    margin-bottom: 28px;
+  }
+  .field {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 22px;
+    font-weight: 600;
+  }
+  .field strong {
+    font-size: 1.3rem;
+  }
+  .calc-out {
+    padding: clamp(24px, 4vw, 48px);
+    background: var(--night);
+    color: #d6e5e7;
+  }
+  .o-main span {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: #8fb0b5;
+  }
+  .o-main strong {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(3rem, 6vw, 4.6rem);
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: var(--yellow);
+    font-variant-numeric: tabular-nums;
+  }
+  .calc-out dl {
+    margin: 20px 0;
+    border-top: 1px solid rgb(255 255 255 / 12%);
+  }
+  .calc-out dl div {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgb(255 255 255 / 12%);
+  }
+  .calc-out dd {
+    margin: 0;
+    font-weight: 700;
+    color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .volume {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgb(244 221 131 / 14%);
+    color: var(--yellow);
+    font-weight: 600;
+  }
+  .o-note {
+    font-size: 0.88rem;
+    color: #9fb9bd;
+    margin: 0;
+  }
+  .matrix {
+    min-width: 760px;
+  }
+  .matrix thead th {
+    text-align: center;
+  }
+  .matrix thead th:first-child {
+    width: 34%;
+  }
+  .matrix td {
+    text-align: center;
+  }
+  .grp th {
+    background: var(--teal-50);
+    color: var(--teal-deep);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .yes {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: var(--white);
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+  .no {
+    color: #b9b5ab;
+    font-weight: 700;
+  }
+  .val {
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+</style>
+
+<script>
+  type P = { id: string; name: string; monthly: number; annual: number };
+  const root = document.querySelector<HTMLElement>("[data-calc]");
+  if (root) {
+    const plans: P[] = JSON.parse(root.dataset.plans!);
+    const loc = root.querySelector<HTMLInputElement>("[data-loc]")!;
+    const planBtns = root.querySelectorAll<HTMLButtonElement>("[data-calc-plan]");
+    const billBtns = root.querySelectorAll<HTMLButtonElement>("[data-calc-bill]");
+    let plan = "premium";
+    let bill: "monthly" | "annual" = "annual";
+    const money = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const update = () => {
+      const n = Number(loc.value);
+      const p = plans.find((x) => x.id === plan)!;
+      const unit = bill === "annual" ? p.annual : p.monthly;
+      $("[data-loc-out]").textContent = String(n);
+      $("[data-o-month]").textContent = money(unit * n);
+      $("[data-o-year]").textContent = money(unit * n * 12);
+      $("[data-o-save]").textContent = bill === "annual" ? money((p.monthly - p.annual) * n * 12) : "$0.00 (switch to annual)";
+      $("[data-o-unit]").textContent = money(unit);
+      $("[data-o-volume]").hidden = n < 10;
+    };
+    loc.addEventListener("input", update);
+    planBtns.forEach((b) =>
+      b.addEventListener("click", () => {
+        plan = b.dataset.calcPlan!;
+        planBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        update();
+      }),
+    );
+    const setBill = (m: "monthly" | "annual") => {
+      bill = m;
+      billBtns.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.calcBill === m)));
+      update();
+    };
+    billBtns.forEach((b) => b.addEventListener("click", () => setBill(b.dataset.calcBill as "monthly" | "annual")));
+    document.addEventListener("pricing:billing", (e) => setBill((e as CustomEvent).detail));
+    update();
+  }
+</script>

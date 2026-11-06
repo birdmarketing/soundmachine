@@ -1,0 +1,19 @@
+---
+// A statistic with a visible marker when it's a placeholder or still needs source verification.
+import type { Stat } from "../../data/research";
+interface Props {
+  stat: Stat;
+  class?: string;
+}
+const { stat, class: cls } = Astro.props;
+---
+
+<span class:list={["sv", cls]}>
+  {stat.value}{
+    stat.status === "placeholder" && (
+      <sup class="ph" title="Illustrative placeholder figure: replace before launch">
+        †<span class="sr-only"> (illustrative placeholder)</span>
+      </sup>
+    )
+  }
+</span>

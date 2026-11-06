@@ -1,0 +1,82 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  tone?: "light" | "dark";
+  align?: "left" | "center";
+}
+const { eyebrow, title, lede, tone = "light", align = "left" } = Astro.props;
+---
+
+<section class:list={["page-hero", tone === "dark" && "dark", align]}>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="container inner">
+    <div class="copy">
+      <span class="eyebrow">{eyebrow}</span>
+      <h1 set:html={title} />
+      {lede && <p class="lede">{lede}</p>}
+      <slot name="actions" />
+    </div>
+    <div class="side">
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(56px, 8vw, 112px) 0 clamp(48px, 7vw, 96px);
+  }
+  .glow {
+    position: absolute;
+    inset: -40% -10% auto auto;
+    width: 70vw;
+    height: 70vw;
+    max-width: 900px;
+    max-height: 900px;
+    background: radial-gradient(circle, rgb(0 144 159 / 16%), transparent 60%);
+    pointer-events: none;
+  }
+  .dark .glow {
+    background: radial-gradient(circle, rgb(0 144 159 / 35%), transparent 60%);
+  }
+  .inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+  }
+  @media (min-width: 960px) {
+    .inner:has(.side > *) {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    }
+  }
+  .center .copy {
+    text-align: center;
+    margin-inline: auto;
+    max-width: 900px;
+  }
+  .center .lede {
+    margin-inline: auto;
+  }
+  .copy :global(h1 em) {
+    font-style: normal;
+    color: var(--teal-strong);
+  }
+  .dark .copy :global(h1 em) {
+    color: var(--yellow);
+  }
+  .copy :global(.btn-row) {
+    margin-top: 28px;
+  }
+  .center .copy :global(.btn-row) {
+    justify-content: center;
+  }
+  .side:empty {
+    display: none;
+  }
+</style>

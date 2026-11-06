@@ -1,0 +1,459 @@
+---
+// Pick what you have today → see how SoundMachine plugs in.
+import { INTEGRATIONS, PLAYBACK, STARTING_POINTS } from "../data/integrations";
+
+const items = [
+  ...PLAYBACK.map((p) => ({
+    id: p.id,
+    name: p.name,
+    kind: "SoundMachine",
+    zones: p.id === "player" ? "One stream per player" : "One stream",
+    control: p.id === "mobile" ? "SoundMachine app" : p.id === "player" ? "SoundMachine app, remotely" : "Browser",
+    goodFor: p.id === "web" ? "Trying SoundMachine, small venues" : p.id === "mobile" ? "Managers on the move" : "Hands-off reliability at every site",
+    points: [p.tagline, p.detail],
+  })),
+  ...INTEGRATIONS,
+];
+const kinds = ["All", "SoundMachine", "Streamer & amp", "Control system", "Wireless multi-room", "Pro audio platform"];
+const data = JSON.stringify(Object.fromEntries(items.map((i) => [i.id, i])));
+const recos = JSON.stringify(Object.fromEntries(STARTING_POINTS.map((s) => [s.id, s])));
+---
+
+<div class="ix" data-ix data-items={data} data-recos={recos}>
+  <div class="start">
+    <p class="q">What do you have today?</p>
+    <div class="starts" role="group" aria-label="Your current setup">
+      {
+        STARTING_POINTS.map((s, i) => (
+          <button type="button" aria-pressed={i === 0 ? "true" : "false"} data-start={s.id}>
+            {s.label}
+          </button>
+        ))
+      }
+    </div>
+    <p class="start-note" data-start-note aria-live="polite">{STARTING_POINTS[0].note}</p>
+  </div>
+
+  <div class="flow" aria-live="polite">
+    <div class="node cloud">
+      <span class="n-kicker">SoundMachine cloud</span>
+      <strong>Licensed catalogue</strong>
+      <span class="n-tags"><i>Stations</i><i>Schedules</i><i>Messages</i></span>
+    </div>
+    <svg class="wire w1" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 10 H100"></path></svg>
+    <div class="node mid">
+      <span class="n-kicker" data-flow-kind>SoundMachine</span>
+      <strong data-flow-name>SoundMachine hardware player</strong>
+      <span class="n-sub" data-flow-control>SoundMachine app, remotely</span>
+    </div>
+    <svg class="wire w2" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true"><path d="M0 10 H100"></path></svg>
+    <div class="node out">
+      <span class="n-kicker">Your sound system</span>
+      <strong>Amp &amp; speakers</strong>
+      <span class="n-sub" data-flow-zones>One stream per player</span>
+      <span class="speakers" aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+  </div>
+
+  <div class="browse">
+    <div class="kinds" role="group" aria-label="Filter by type">
+      {
+        kinds.map((k, i) => (
+          <button type="button" class="kind" aria-pressed={i === 0 ? "true" : "false"} data-kind={k}>
+            {k}
+          </button>
+        ))
+      }
+    </div>
+    <div class="browse-grid">
+      <ul class="cards">
+        {
+          items.map((it) => (
+            <li data-card={it.id} data-kind={it.kind}>
+              <button type="button" class="card-btn" aria-pressed={it.id === "player" ? "true" : "false"} data-pick={it.id}>
+                <span class="wordmark">{it.name}</span>
+                <span class="c-kind">{it.kind}</span>
+                <span class="reco-flag">Recommended</span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+      <aside class="detail" data-detail aria-live="polite">
+        <span class="d-kind" data-d-kind></span>
+        <h3 data-d-name></h3>
+        <dl>
+          <div><dt>Zones</dt><dd data-d-zones></dd></div>
+          <div><dt>Control</dt><dd data-d-control></dd></div>
+          <div><dt>Good for</dt><dd data-d-good></dd></div>
+        </dl>
+        <ul class="tick-list" data-d-points></ul>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ix {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+  .q {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+  .starts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .starts button,
+  .kind {
+    border: 1.5px solid var(--line-strong);
+    background: var(--white);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s,
+      color 0.2s;
+  }
+  .starts button:hover,
+  .kind:hover {
+    border-color: var(--teal);
+  }
+  .starts button[aria-pressed="true"] {
+    background: var(--teal-strong);
+    border-color: var(--teal-strong);
+    color: var(--white);
+  }
+  .start-note {
+    margin: 14px 0 0;
+    font-size: 1.05rem;
+    color: var(--charcoal);
+    min-height: 1.6em;
+  }
+
+  /* Signal flow */
+  .flow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    align-items: center;
+    padding: clamp(20px, 3vw, 36px);
+    border-radius: var(--radius-lg);
+    background: var(--night);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 860px) {
+    .flow {
+      grid-template-columns: 1fr 90px 1.1fr 90px 1fr;
+    }
+  }
+  .node {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    padding: 20px;
+    border-radius: 18px;
+    background: var(--night-2);
+    border: 1px solid rgb(255 255 255 / 10%);
+    min-height: 140px;
+    align-content: center;
+  }
+  .node.mid {
+    background: var(--teal-strong);
+    border-color: transparent;
+    box-shadow: 0 0 0 6px rgb(0 144 159 / 25%);
+    animation: glow 2.4s ease-in-out infinite;
+  }
+  @keyframes glow {
+    50% {
+      box-shadow: 0 0 0 12px rgb(0 144 159 / 12%);
+    }
+  }
+  .node strong {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+  .n-kicker {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+  .n-sub {
+    font-size: 0.85rem;
+    color: #cfe3e6;
+  }
+  .n-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .n-tags i {
+    font-style: normal;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 10%);
+  }
+  .speakers {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .speakers i {
+    width: 22px;
+    height: 32px;
+    border-radius: 6px;
+    background: radial-gradient(circle at 50% 66%, var(--night) 0 5px, #3a5a60 5px 7px, transparent 7px), radial-gradient(circle at 50% 26%, #3a5a60 0 3px, transparent 3px), #24484e;
+    animation: thump 0.9s ease-in-out infinite;
+  }
+  .speakers i:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+  .speakers i:nth-child(3) {
+    animation-delay: -0.6s;
+  }
+  @keyframes thump {
+    50% {
+      transform: scale(1.06);
+    }
+  }
+  .wire {
+    width: 100%;
+    height: 36px;
+    overflow: visible;
+  }
+  .wire path {
+    stroke: var(--yellow);
+    stroke-width: 3;
+    fill: none;
+    stroke-dasharray: 6 8;
+    vector-effect: non-scaling-stroke;
+    animation: flow 0.8s linear infinite;
+  }
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -14;
+    }
+  }
+  @media (max-width: 859px) {
+    .wire {
+      height: 40px;
+      width: 20px;
+      margin-inline: auto;
+      transform: rotate(90deg);
+    }
+  }
+
+  /* Browse */
+  .kinds {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+  }
+  .kind {
+    flex: none;
+    padding: 7px 14px;
+    font-size: 0.88rem;
+  }
+  .kind[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+  }
+  .browse-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  @media (min-width: 960px) {
+    .browse-grid {
+      grid-template-columns: minmax(0, 1fr) 380px;
+      align-items: start;
+    }
+    .detail {
+      position: sticky;
+      top: 100px;
+    }
+  }
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+  .cards li[hidden] {
+    display: none;
+  }
+  .card-btn {
+    position: relative;
+    width: 100%;
+    min-height: 104px;
+    display: grid;
+    align-content: space-between;
+    gap: 10px;
+    text-align: left;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1.5px solid var(--line);
+    background: var(--white);
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      transform 0.2s var(--ease),
+      box-shadow 0.2s;
+  }
+  .card-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-btn[aria-pressed="true"] {
+    border-color: var(--teal-strong);
+    box-shadow: 0 0 0 3px var(--teal-100);
+  }
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  .c-kind {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .reco-flag {
+    display: none;
+    position: absolute;
+    top: -9px;
+    right: 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--yellow);
+    color: var(--ink);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  li.reco .reco-flag {
+    display: block;
+  }
+  li.reco .card-btn {
+    border-color: var(--yellow-strong);
+  }
+  .detail {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow-sm);
+  }
+  .d-kind {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-strong);
+  }
+  .detail h3 {
+    margin: 4px 0 14px;
+  }
+  .detail dl {
+    margin: 0 0 18px;
+    border-top: 1px solid var(--line);
+  }
+  .detail dl div {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 8px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.9rem;
+  }
+  .detail dt {
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .detail dd {
+    margin: 0;
+    font-weight: 600;
+  }
+  .detail .tick-list {
+    font-size: 0.93rem;
+  }
+</style>
+
+<script>
+  type Item = { id: string; name: string; kind: string; zones: string; control: string; goodFor: string; points: string[] };
+  type Reco = { id: string; label: string; recommend: string[]; note: string };
+  document.querySelectorAll<HTMLElement>("[data-ix]").forEach((root) => {
+    const items: Record<string, Item> = JSON.parse(root.dataset.items!);
+    const recos: Record<string, Reco> = JSON.parse(root.dataset.recos!);
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const cards = Array.from(root.querySelectorAll<HTMLLIElement>("[data-card]"));
+    const picks = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-pick]"));
+
+    const pick = (id: string) => {
+      const it = items[id];
+      if (!it) return;
+      picks.forEach((p) => p.setAttribute("aria-pressed", String(p.dataset.pick === id)));
+      $("[data-flow-kind]").textContent = it.kind === "SoundMachine" ? "SoundMachine" : `${it.kind} · integration`;
+      $("[data-flow-name]").textContent = it.name;
+      $("[data-flow-control]").textContent = `Control: ${it.control}`;
+      $("[data-flow-zones]").textContent = it.zones;
+      $("[data-d-kind]").textContent = it.kind;
+      $("[data-d-name]").textContent = it.name;
+      $("[data-d-zones]").textContent = it.zones;
+      $("[data-d-control]").textContent = it.control;
+      $("[data-d-good]").textContent = it.goodFor;
+      const ul = $("[data-d-points]");
+      ul.innerHTML = "";
+      it.points.forEach((p) => {
+        const li = document.createElement("li");
+        li.textContent = p;
+        ul.appendChild(li);
+      });
+    };
+    picks.forEach((p) => p.addEventListener("click", () => pick(p.dataset.pick!)));
+
+    const starts = root.querySelectorAll<HTMLButtonElement>("[data-start]");
+    const applyStart = (sid: string) => {
+      const r = recos[sid];
+      starts.forEach((s) => s.setAttribute("aria-pressed", String(s.dataset.start === sid)));
+      $("[data-start-note]").textContent = r.note;
+      cards.forEach((c) => c.classList.toggle("reco", r.recommend.includes(c.dataset.card!)));
+      pick(r.recommend[0]);
+    };
+    starts.forEach((s) => s.addEventListener("click", () => applyStart(s.dataset.start!)));
+
+    const kinds = root.querySelectorAll<HTMLButtonElement>("[data-kind]:not(li)");
+    kinds.forEach((k) =>
+      k.addEventListener("click", () => {
+        const kind = k.dataset.kind!;
+        kinds.forEach((x) => x.setAttribute("aria-pressed", String(x === k)));
+        cards.forEach((c) => (c.hidden = !(kind === "All" || c.dataset.kind === kind)));
+      }),
+    );
+    applyStart("amp");
+  });
+</script>

@@ -1,0 +1,553 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import LogoWall from "../components/LogoWall.astro";
+import CtaBand from "../components/CtaBand.astro";
+import { FACTS } from "../data/site";
+
+// Network visual: HQ → 3 regions → locations (positions in a 600×460 box).
+const regions = [
+  { x: 150, y: 120, name: "West" },
+  { x: 450, y: 110, name: "East" },
+  { x: 300, y: 380, name: "International" },
+];
+const seeded = (i: number) => {
+  const s = Math.sin(i * 12.9898) * 43758.5453;
+  return s - Math.floor(s);
+};
+const sites = regions.flatMap((r, ri) =>
+  Array.from({ length: 9 }).map((_, i) => {
+    const a = (i / 9) * Math.PI * 2 + ri;
+    const d = 62 + seeded(ri * 20 + i) * 34;
+    return { x: r.x + Math.cos(a) * d, y: r.y + Math.sin(a) * d * 0.8, r: ri, i };
+  }),
+);
+
+const ROLES = [
+  {
+    id: "hq",
+    name: "Head office",
+    who: "Brand & marketing team",
+    perms: { "Choose stations & mixes": true, "Build schedules": true, "Create & schedule messages": true, "Push content to all locations": true, "Manage users & access": true, "Adjust volume & skip": true },
+  },
+  {
+    id: "region",
+    name: "Regional manager",
+    who: "Area or franchise lead",
+    perms: { "Choose stations & mixes": true, "Build schedules": true, "Create & schedule messages": true, "Push content to all locations": false, "Manage users & access": false, "Adjust volume & skip": true },
+  },
+  {
+    id: "store",
+    name: "Store manager",
+    who: "On-site lead",
+    perms: { "Choose stations & mixes": false, "Build schedules": false, "Create & schedule messages": false, "Push content to all locations": false, "Manage users & access": false, "Adjust volume & skip": true },
+  },
+];
+const permNames = Object.keys(ROLES[0].perms);
+---
+
+<Base
+  title="Enterprise Music Solutions for Business | SoundMachine"
+  description="Scalable, licensed background music for enterprise. Custom playlists, centralised control across locations, SLA-backed service. A true Spotify enterprise alternative."
+  path="/enterprise-music-solutions"
+>
+  <PageHero
+    tone="dark"
+    eyebrow="Enterprise"
+    title="Scalable background music for <em>enterprise</em> environments"
+    lede="One brand sound across hundreds of locations: curated for you, controlled centrally, licensed for commercial use and backed by a service level agreement."
+  >
+    <div class="net" aria-hidden="true">
+      <svg viewBox="0 0 600 460">
+        <g class="links">
+          {regions.map((r) => <line x1="300" y1="230" x2={r.x} y2={r.y} class="trunk" />)}
+          {sites.map((s) => <line x1={regions[s.r].x} y1={regions[s.r].y} x2={s.x.toFixed(1)} y2={s.y.toFixed(1)} />)}
+        </g>
+        <g class="pulses">
+          {regions.map((r, i) => <circle r="5" class="pulse" style={`--x:${r.x - 300}px;--y:${r.y - 230}px;animation-delay:${i * 0.5}s`} cx="300" cy="230" />)}
+        </g>
+        <g class="sites">
+          {sites.map((s) => <circle cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r="6" style={`animation-delay:${(s.r * 0.5 + 1 + s.i * 0.08).toFixed(2)}s`} />)}
+        </g>
+        <g class="regions">
+          {
+            regions.map((r) => (
+              <g>
+                <circle cx={r.x} cy={r.y} r="16" />
+                <text x={r.x} y={r.y + 36} text-anchor="middle">
+                  {r.name}
+                </text>
+              </g>
+            ))
+          }
+        </g>
+        <circle cx="300" cy="230" r="34" class="hq" />
+        <text x="300" y="235" text-anchor="middle" class="hq-t">HQ</text>
+      </svg>
+      <p class="net-cap"><span class="eq"><i></i><i></i><i></i><i></i></span> Schedule pushed to 27 locations</p>
+    </div>
+    <div slot="actions" class="btn-row">
+      <a class="btn btn-yellow" href="/contact">Talk to our enterprise team</a>
+    </div>
+  </PageHero>
+
+  <section class="section white">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Services</span>
+        <h2>A music team that works for your brand</h2>
+      </div>
+      <div class="grid grid-3 reveal services">
+        <article class="card">
+          <span class="ic playlist" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          <h3>Custom playlists</h3>
+          <p>Tell us your company's story and our curators will handcraft playlists designed for your brand and the environment you want to create.</p>
+        </article>
+        <article class="card">
+          <img class="ic-img" src="/images/icons/waves_red.svg" alt="" width="88" height="88" />
+          <h3>Content creation</h3>
+          <p>The right music shapes a positive customer experience. We'll work with you on customised content, including messaging, to build the soundtrack to your business.</p>
+        </article>
+        <article class="card">
+          <img class="ic-img" src="/images/icons/record.svg" alt="" width="88" height="88" />
+          <h3>Music supervision</h3>
+          <p>An event, an advertising campaign, a video, or anything that needs a shot of adrenaline: our team will help you choose just the right sound.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Built for scale</span>
+        <h2>Spotify isn't for enterprise. SoundMachine is.</h2>
+        <p>Consumer streaming is built for personal listening. Enterprise brands need licensing, control, accountability and support.</p>
+      </div>
+      <div class="table-wrap reveal">
+        <table class="vs">
+          <thead>
+            <tr>
+              <th scope="col"><span class="sr-only">Capability</span></th>
+              <th scope="col">Consumer streaming apps</th>
+              <th scope="col" class="sm">SoundMachine Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Licensed for commercial use</th><td class="n">Personal use only</td><td class="y">Yes. US &amp; Canada performance licences included</td></tr>
+            <tr><th scope="row">Service level agreement</th><td class="n">No</td><td class="y">Yes</td></tr>
+            <tr><th scope="row">Central control of every location and zone</th><td class="n">No</td><td class="y">Yes, from one dashboard</td></tr>
+            <tr><th scope="row">User roles and access control</th><td class="n">No</td><td class="y">Yes, different access per user</td></tr>
+            <tr><th scope="row">Scheduling and in-store messaging</th><td class="n">No</td><td class="y">Yes</td></tr>
+            <tr><th scope="row">Playlists curated for your brand</th><td class="n">No</td><td class="y">Yes, by our curators</td></tr>
+            <tr><th scope="row">Integration with commercial AV</th><td class="n">Limited</td><td class="y">Q-SYS, Crestron, Sonos, Control4 and more</td></tr>
+            <tr><th scope="row">International business support</th><td class="n">Consumer help centre</td><td class="y">24/7, wherever you operate</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="reveal">
+        <span class="eyebrow">Roles &amp; permissions</span>
+        <h2>The right access for every person</h2>
+        <p class="lede">Head office sets the brand sound. Regions adapt it. Stores just press play. Give every user exactly the control they need.</p>
+        <p class="muted small">Example configuration. Access levels are set per user.</p>
+      </div>
+      <div class="roles reveal" data-roles>
+        <div class="seg" role="group" aria-label="Choose a role">
+          {
+            ROLES.map((r, i) => (
+              <button type="button" aria-pressed={i === 0 ? "true" : "false"} data-role={r.id}>
+                {r.name}
+              </button>
+            ))
+          }
+        </div>
+        {
+          ROLES.map((r, i) => (
+            <div class="role" data-role-panel={r.id} hidden={i !== 0}>
+              <p class="who">{r.who}</p>
+              <ul>
+                {permNames.map((p) => (
+                  <li class={(r.perms as Record<string, boolean>)[p] ? "on" : "off"}>
+                    <span class="mark" aria-hidden="true" />
+                    {p}
+                    <span class="sr-only">{(r.perms as Record<string, boolean>)[p] ? ": allowed" : ": not allowed"}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section dark">
+    <div class="container">
+      <div class="grid grid-3 pillars">
+        <article class="reveal">
+          <span class="p-num">SLA</span>
+          <h3>Service level agreement</h3>
+          <p>Our commitment is backed by a solid SLA, so quality standards are met and your company is supported, whatever happens.</p>
+        </article>
+        <article class="reveal">
+          <span class="p-num">🔒</span>
+          <h3>Built-in security &amp; compliance</h3>
+          <p>The highest standards of security, with control over access for every end user in your organisation.</p>
+        </article>
+        <article class="reveal">
+          <span class="p-num">24/7</span>
+          <h3>International scope</h3>
+          <p>International customer support, 24/7, wherever your business is located. SoundMachine is available in {FACTS.countries}+ countries.</p>
+        </article>
+      </div>
+      <dl class="ent-facts">
+        <div><dt>Locations served</dt><dd>{FACTS.locations.toLocaleString("en-US")}+</dd></div>
+        <div><dt>Countries</dt><dd>{FACTS.countries}+</dd></div>
+        <div><dt>AV installer partners</dt><dd>Thousands</dd></div>
+        <div><dt>In business since</dt><dd>{FACTS.founded}</dd></div>
+      </dl>
+    </div>
+    <LogoWall tone="dark" title="You are in good company" />
+  </section>
+
+  <section class="section">
+    <div class="container split">
+      <div class="reveal">
+        <span class="eyebrow">Onboarding</span>
+        <h2>Set up for success from day one</h2>
+        <p>Every SoundMachine subscription includes access to our Music Concierge, custom training and implementation services. Enterprise accounts add priority assistance and dedicated account management.</p>
+      </div>
+      <ol class="onboard reveal">
+        <li><strong>Discovery</strong><span>Your brand, locations, AV estate and goals.</span></li>
+        <li><strong>Curation</strong><span>Custom playlists and schedules from our curators.</span></li>
+        <li><strong>Implementation</strong><span>Rollout to every site and integration with your AV partners.</span></li>
+        <li><strong>Training</strong><span>Custom training for head office and site teams.</span></li>
+        <li><strong>Ongoing care</strong><span>A dedicated account manager and priority support.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <CtaBand title="Want to know more about SoundMachine for enterprise?" text="Tell us about your locations and we'll show you how SoundMachine scales." />
+</Base>
+
+<style>
+  .net {
+    position: relative;
+  }
+  .net svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .links line {
+    stroke: rgb(255 255 255 / 12%);
+    stroke-width: 1.2;
+  }
+  .links .trunk {
+    stroke: rgb(244 221 131 / 45%);
+    stroke-width: 2;
+    stroke-dasharray: 4 6;
+    animation: dash 1.2s linear infinite;
+  }
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+  .sites circle {
+    fill: var(--teal);
+    animation: light 4s ease-in-out infinite;
+  }
+  @keyframes light {
+    0%,
+    100% {
+      fill: #1d5d64;
+    }
+    20%,
+    40% {
+      fill: var(--lime);
+    }
+  }
+  .regions circle {
+    fill: var(--night-2);
+    stroke: var(--yellow);
+    stroke-width: 2;
+  }
+  .regions text {
+    fill: #a9c2c6;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--font-body);
+  }
+  .hq {
+    fill: var(--yellow);
+  }
+  .hq-t {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    fill: var(--ink);
+  }
+  .pulse {
+    fill: var(--yellow);
+    animation: travel 4s ease-in infinite;
+  }
+  @keyframes travel {
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    25% {
+      transform: translate(var(--x), var(--y));
+      opacity: 1;
+    }
+    30%,
+    100% {
+      transform: translate(var(--x), var(--y));
+      opacity: 0;
+    }
+  }
+  .net-cap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--night-2);
+    color: var(--yellow);
+    font-weight: 700;
+    font-size: 0.88rem;
+  }
+  .services .card {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+  }
+  .services p {
+    color: var(--muted);
+    margin: 0;
+  }
+  .ic,
+  .ic-img {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 14px;
+  }
+  .ic.playlist {
+    border-radius: 50%;
+    background: #c4c4c4;
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    padding: 0 22px;
+  }
+  .ic.playlist i {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--teal);
+  }
+  .ic.playlist i:nth-child(2) {
+    background: var(--pink);
+  }
+  .ic.playlist i:nth-child(3) {
+    background: var(--orange);
+  }
+  .ic.playlist i:nth-child(4) {
+    background: var(--teal);
+  }
+  .ic.playlist i:nth-child(5) {
+    background: var(--yellow);
+  }
+  .vs {
+    min-width: 640px;
+  }
+  .vs th.sm {
+    background: var(--teal-strong);
+    color: var(--white);
+  }
+  .vs td.n {
+    color: var(--muted);
+  }
+  .vs td.n::before {
+    content: "✕ ";
+    color: var(--red);
+    font-weight: 800;
+  }
+  .vs td.y {
+    font-weight: 600;
+    background: var(--teal-50);
+  }
+  .vs td.y::before {
+    content: "✓ ";
+    color: var(--green);
+    font-weight: 800;
+  }
+  .roles {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: clamp(20px, 3vw, 32px);
+    box-shadow: var(--shadow);
+  }
+  .role ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .who {
+    margin: 18px 0 12px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .role li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--paper);
+    font-weight: 600;
+    animation: fadein 0.3s var(--ease) backwards;
+  }
+  .role li:nth-child(2) {
+    animation-delay: 0.04s;
+  }
+  .role li:nth-child(3) {
+    animation-delay: 0.08s;
+  }
+  .role li:nth-child(4) {
+    animation-delay: 0.12s;
+  }
+  .role li:nth-child(5) {
+    animation-delay: 0.16s;
+  }
+  .role li:nth-child(6) {
+    animation-delay: 0.2s;
+  }
+  @keyframes fadein {
+    from {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+  }
+  .role li.off {
+    color: #a39f95;
+    background: transparent;
+    border: 1px dashed var(--line-strong);
+  }
+  .mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex: none;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+        center / 100% no-repeat,
+      var(--green);
+  }
+  .off .mark {
+    background: var(--paper-2);
+  }
+  .pillars article {
+    padding: 28px;
+    border-radius: var(--radius);
+    background: var(--night-2);
+    border: 1px solid rgb(255 255 255 / 8%);
+  }
+  .p-num {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--yellow);
+    margin-bottom: 14px;
+  }
+  .pillars p {
+    color: #b9cfd2;
+    margin: 0;
+  }
+  .ent-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 16px;
+    margin: 48px 0 0;
+  }
+  .ent-facts div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+    padding-top: 16px;
+    border-top: 2px solid var(--yellow);
+  }
+  .ent-facts dt {
+    color: #a9c2c6;
+  }
+  .ent-facts dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.4rem;
+    color: var(--white);
+    line-height: 1;
+  }
+  .onboard {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: o;
+    display: grid;
+    gap: 0;
+  }
+  .onboard li {
+    counter-increment: o;
+    position: relative;
+    display: grid;
+    padding: 16px 0 16px 64px;
+    border-left: 2px solid var(--line);
+    margin-left: 20px;
+  }
+  .onboard li::before {
+    content: counter(o);
+    position: absolute;
+    left: -21px;
+    top: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--white);
+    border: 2px solid var(--teal);
+    font-weight: 800;
+    color: var(--teal-strong);
+  }
+  .onboard strong {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .onboard span {
+    color: var(--muted);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-roles]").forEach((root) => {
+    const btns = root.querySelectorAll<HTMLButtonElement>("[data-role]");
+    const panels = root.querySelectorAll<HTMLElement>("[data-role-panel]");
+    btns.forEach((b) =>
+      b.addEventListener("click", () => {
+        btns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        panels.forEach((p) => (p.hidden = p.dataset.rolePanel !== b.dataset.role));
+      }),
+    );
+  });
+</script>

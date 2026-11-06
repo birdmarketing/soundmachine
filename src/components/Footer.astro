@@ -1,0 +1,192 @@
+---
+import { APP, OFFICES, SOCIAL, FACTS } from "../data/site";
+const year = 2026;
+const cols = [
+  {
+    title: "Product",
+    links: [
+      { label: "How it works", href: "/how-it-works" },
+      { label: "Devices & integrations", href: "/devices" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Enterprise", href: "/enterprise-music-solutions" },
+      { label: "Log in", href: APP.login },
+    ],
+  },
+  {
+    title: "Licensing",
+    links: [
+      { label: "Licensing overview", href: "/licensing" },
+      { label: "United States", href: "/licensing/united-states" },
+      { label: "Canada", href: "/licensing/canada" },
+      { label: "United Kingdom", href: "/licensing/united-kingdom" },
+      { label: "ASCAP", href: "/licensing/ascap" },
+      { label: "BMI", href: "/licensing/bmi" },
+      { label: "SESAC", href: "/licensing/sesac" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Research & insights", href: "/research" },
+      { label: "Blog", href: APP.blog },
+      { label: "Contact us", href: "/contact" },
+      { label: "Help: " + APP.helpEmail, href: `mailto:${APP.helpEmail}` },
+    ],
+  },
+];
+---
+
+<footer class="footer dark">
+  <div class="container">
+    <div class="top">
+      <div class="brand">
+        <img src="/images/soundmachine.svg" alt="SoundMachine" width="200" height="25" class="logo" />
+        <p>
+          Licensed background music for business since {FACTS.founded}. Curated stations, scheduling and messaging for {FACTS.locations.toLocaleString("en-US")}+ locations.
+        </p>
+        <div class="eq-row" aria-hidden="true">
+          <span class="eq"><i></i><i></i><i></i><i></i></span>
+          <span>Playing at locations right now</span>
+        </div>
+      </div>
+      {
+        cols.map((c) => (
+          <nav aria-label={c.title}>
+            <h2>{c.title}</h2>
+            <ul>
+              {c.links.map((l) => (
+                <li>
+                  <a href={l.href}>{l.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+    <div class="offices">
+      {
+        OFFICES.map((o) => (
+          <address>
+            <strong>{o.city}</strong>
+            {o.lines.map((l) => (
+              <span>{l}</span>
+            ))}
+          </address>
+        ))
+      }
+      <ul class="social">
+        {
+          SOCIAL.map((s) => (
+            <li>
+              <a href={s.href} rel="noopener">
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="bottom">
+      <span>© {year} SoundMachine. All rights reserved.</span>
+      <span class="staging">Staging preview by Bird Marketing: not indexed by search engines.</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding: clamp(56px, 8vw, 96px) 0 32px;
+    font-size: 0.95rem;
+  }
+  .top {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 720px) {
+    .top {
+      grid-template-columns: 1.6fr repeat(3, 1fr);
+    }
+  }
+  .logo {
+    width: 200px;
+    height: auto;
+    background: var(--white);
+    padding: 10px 14px;
+    border-radius: 10px;
+    box-sizing: content-box;
+    margin-bottom: 20px;
+  }
+  .brand p {
+    color: #a9c2c6;
+    max-width: 40ch;
+  }
+  .eq-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--yellow);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  h2 {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7f9ea3;
+    margin-bottom: 14px;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .footer a {
+    color: #e2eef0;
+    text-decoration: none;
+  }
+  .footer a:hover {
+    color: var(--yellow);
+    text-decoration: underline;
+  }
+  .offices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px 56px;
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+    align-items: flex-start;
+  }
+  address {
+    font-style: normal;
+    display: grid;
+    color: #a9c2c6;
+  }
+  address strong {
+    color: var(--white);
+  }
+  .social {
+    display: flex;
+    gap: 18px;
+    margin-left: auto;
+  }
+  .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+    color: #7f9ea3;
+    font-size: 0.85rem;
+  }
+  .staging {
+    color: var(--yellow);
+  }
+</style>

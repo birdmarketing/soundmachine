@@ -1,0 +1,1545 @@
+---
+// Interactive recreation of the SoundMachine web dashboard.
+// Locations, Stations, Mixes, Schedules and Messages, plus a live player bar.
+import { ACCOUNT, LOCATIONS, STATIONS, GENRES, SCHEDULE, MESSAGES, artStyle } from "../data/demo";
+
+interface Props {
+  initial?: "locations" | "stations" | "mixes" | "schedules" | "messages";
+  id?: string;
+}
+const { initial = "locations", id = "app-demo" } = Astro.props;
+
+const TABS = [
+  { id: "locations", label: "Locations", icon: "M3 21V8l9-5 9 5v13M9 21v-6h6v6" },
+  { id: "stations", label: "Stations", icon: "M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 12m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0" },
+  { id: "mixes", label: "Mixes", icon: "M4 7h3l10 10h3M4 17h3l3-3M14 10l3-3h3M18 4l3 3-3 3M18 14l3 3-3 3" },
+  { id: "schedules", label: "Schedules", icon: "M4 6h16v15H4zM4 10h16M9 3v4M15 3v4" },
+  { id: "messages", label: "Messages", icon: "M4 5h16v11H8l-4 4z" },
+] as const;
+
+const stationIndex = (sid: string) => STATIONS.findIndex((s) => s.id === sid);
+const stationName = (sid: string) => STATIONS.find((s) => s.id === sid)?.name ?? sid;
+const zoneCount = LOCATIONS.reduce((n, l) => n + l.zones.length, 0);
+const deviceIcon: Record<string, string> = { online: "Online", offline: "Offline", idle: "Idle" };
+---
+
+<div class="app" data-app id={id} data-initial={initial}>
+  <div class="app-top">
+    <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="url">app.sound-machine.com</span>
+    <span class="acct"><span class="avatar" aria-hidden="true">HP</span><span class="acct-name">{ACCOUNT}</span></span>
+  </div>
+
+  <div class="app-body">
+    <div class="app-nav" role="tablist" aria-label="Dashboard sections">
+      {
+        TABS.map((t) => (
+          <button
+            type="button"
+            role="tab"
+            id={`${id}-tab-${t.id}`}
+            aria-controls={`${id}-panel-${t.id}`}
+            aria-selected={t.id === initial ? "true" : "false"}
+            tabindex={t.id === initial ? 0 : -1}
+            data-tab={t.id}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d={t.icon} />
+            </svg>
+            <span>{t.label}</span>
+          </button>
+        ))
+      }
+      <div class="nav-foot" aria-hidden="true">
+        <span class="lic">Licensed for business</span>
+        <span class="lic-pros">ASCAP · BMI · SESAC · GMR</span>
+      </div>
+    </div>
+
+    <div class="app-main">
+      <!-- LOCATIONS ------------------------------------------------------>
+      <section class="panel" role="tabpanel" id={`${id}-panel-locations`} aria-labelledby={`${id}-tab-locations`} data-panel="locations" hidden={initial !== "locations"}>
+        <div class="panel-head">
+          <div>
+            <h3>Locations &amp; zones</h3>
+            <p>{LOCATIONS.length} locations · {zoneCount} zones · one dashboard</p>
+          </div>
+          <button type="button" class="mini-btn" data-push>Push “Evening Lounge” to all zones</button>
+        </div>
+        <div class="zones-wrap">
+          <table class="zones">
+            <thead>
+              <tr><th scope="col">Zone</th><th scope="col">Playing from</th><th scope="col">Now playing</th><th scope="col">Status</th></tr>
+            </thead>
+            <tbody>
+              {
+                LOCATIONS.map((loc, li) => (
+                  <>
+                    <tr class="loc-row">
+                      <th colspan="4" scope="colgroup">
+                        <span class="loc-name">{loc.name}</span> <span class="loc-city">{loc.city}</span>
+                      </th>
+                    </tr>
+                    {loc.zones.map((z, zi) => (
+                      <tr class="zone-row" data-zone={`${li}-${zi}`} data-status={z.status}>
+                        <td>
+                          <button type="button" class="zone-btn" data-select-zone={`${li}-${zi}`}>
+                            {z.name}
+                          </button>
+                        </td>
+                        <td class="device">{z.device}</td>
+                        <td class="playing" data-playing>{z.playing}</td>
+                        <td>
+                          <span class={`status ${z.status}`} data-status-label>
+                            {deviceIcon[z.status]}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- STATIONS ------------------------------------------------------->
+      <section class="panel" role="tabpanel" id={`${id}-panel-stations`} aria-labelledby={`${id}-tab-stations`} data-panel="stations" hidden={initial !== "stations"}>
+        <div class="panel-head">
+          <div>
+            <h3>Stations</h3>
+            <p><span data-station-count>{STATIONS.length}</span> shown here · 500+ in the full library</p>
+          </div>
+          <label class="energy">
+            <span>Energy: <strong data-energy-label>Any</strong></span>
+            <input type="range" min="0" max="5" step="1" value="0" data-energy aria-label="Filter stations by energy, from mellow to upbeat" />
+            <span class="energy-scale" aria-hidden="true"><span>Any</span><span>Mellow</span><span>Upbeat</span></span>
+          </label>
+        </div>
+        <div class="genres" role="group" aria-label="Filter by genre">
+          {
+            GENRES.map((g, i) => (
+              <button type="button" class="genre" aria-pressed={i === 0 ? "true" : "false"} data-genre={g}>
+                {g}
+              </button>
+            ))
+          }
+        </div>
+        <ul class="stations">
+          {
+            STATIONS.map((s, i) => (
+              <li data-station={s.id} data-genre={s.genre} data-e={s.energy}>
+                <button type="button" class="station" data-play-station={s.id}>
+                  <span class="art" style={artStyle(i)} aria-hidden="true" />
+                  <span class="s-name">{s.name}</span>
+                  <span class="s-desc">{s.desc}</span>
+                  <span class="s-energy" aria-label={`Energy ${s.energy} of 5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <i class={n <= s.energy ? "on" : ""} />
+                    ))}
+                  </span>
+                </button>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="empty" hidden data-empty>No stations match. Try another genre or energy level.</p>
+      </section>
+
+      <!-- MIXES ---------------------------------------------------------->
+      <section class="panel" role="tabpanel" id={`${id}-panel-mixes`} aria-labelledby={`${id}-tab-mixes`} data-panel="mixes" hidden={initial !== "mixes"}>
+        <div class="panel-head">
+          <div>
+            <h3>Sunday Brunch Mix</h3>
+            <p>Blend stations and set how much each one weighs in the mix.</p>
+          </div>
+          <button type="button" class="mini-btn" data-play-mix>Play mix</button>
+        </div>
+        <div class="mix">
+          <div class="mix-rows">
+            {
+              [
+                ["nu-jazz", 50],
+                ["acoustic-pop", 30],
+                ["latin-cafe", 20],
+              ].map(([sid, w], i) => (
+                <div class="mix-row" data-mix-row={i}>
+                  <span class="swatch" style={artStyle(stationIndex(sid as string))} aria-hidden="true" />
+                  <label class="sr-only" for={`${id}-mix-s-${i}`}>
+                    Station {i + 1}
+                  </label>
+                  <select id={`${id}-mix-s-${i}`} data-mix-station>
+                    {STATIONS.map((s) => (
+                      <option value={s.id} selected={s.id === sid}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input type="range" min="0" max="100" value={w} data-mix-weight aria-label={`Weight of station ${i + 1}`} />
+                  <output data-mix-out>{w}%</output>
+                </div>
+              ))
+            }
+          </div>
+          <div class="mix-viz">
+            <svg viewBox="0 0 120 120" class="donut" aria-hidden="true" data-donut>
+              <circle cx="60" cy="60" r="44" fill="none" stroke="#eee" stroke-width="18" />
+            </svg>
+            <div class="mix-energy">
+              <span>Mix energy</span>
+              <strong data-mix-energy>Relaxed</strong>
+            </div>
+          </div>
+          <div class="queue">
+            <h4>Up next</h4>
+            <ol data-queue></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCHEDULES ------------------------------------------------------>
+      <section class="panel" role="tabpanel" id={`${id}-panel-schedules`} aria-labelledby={`${id}-tab-schedules`} data-panel="schedules" hidden={initial !== "schedules"}>
+        <div class="panel-head">
+          <div>
+            <h3>Lobby Schedule</h3>
+            <p>Match music to the time of day. Applied to 3 lobbies.</p>
+          </div>
+          <p class="sched-detail" data-sched-detail aria-live="polite">Select a block to see details</p>
+        </div>
+        <div class="sched-scroll">
+          <div class="sched">
+            <div class="hours" aria-hidden="true">
+              {[6, 9, 12, 15, 18, 21, 24].map((h) => <span style={`top:${((h - 6) / 18) * 100}%`}>{String(h % 24).padStart(2, "0")}:00</span>)}
+            </div>
+            {
+              SCHEDULE.map((d) => (
+                <div class="day" data-day={d.day}>
+                  <span class="day-name">{d.day}</span>
+                  <div class="day-track">
+                    {d.blocks.map(([s, e, sid]) => (
+                      <button
+                        type="button"
+                        class="block"
+                        style={`top:${((s - 6) / 18) * 100}%;height:${((e - s) / 18) * 100}%;${artStyle(stationIndex(sid))}`}
+                        data-block={`${d.day}|${s}|${e}|${stationName(sid)}`}
+                      >
+                        <span>{stationName(sid)}</span>
+                      </button>
+                    ))}
+                    <span class="now-line" hidden data-now-line />
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- MESSAGES ------------------------------------------------------->
+      <section class="panel" role="tabpanel" id={`${id}-panel-messages`} aria-labelledby={`${id}-tab-messages`} data-panel="messages" hidden={initial !== "messages"}>
+        <div class="panel-head">
+          <div>
+            <h3>Messages</h3>
+            <p>Promotions and announcements at exact times or set intervals.</p>
+          </div>
+        </div>
+        <ul class="msgs">
+          {
+            MESSAGES.map((m) => (
+              <li class="msg">
+                <label class="switch">
+                  <input type="checkbox" checked={m.on} data-msg={m.id} data-type={m.type} data-every={m.every ?? ""} data-at={m.at ?? ""} />
+                  <span class="track" aria-hidden="true" />
+                  <span class="sr-only">Enable message: {m.title}</span>
+                </label>
+                <span class="msg-title">{m.title}</span>
+                <span class="msg-type">{m.type === "interval" ? `Every ${m.every} min` : `Daily at ${m.at} past the hour`}</span>
+                <span class="msg-group">{m.group}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="timeline-wrap">
+          <div class="timeline-head">
+            <h4>The next 60 minutes</h4>
+            <span class="legend"><i class="lg-song"></i> Songs <i class="lg-msg"></i> Messages</span>
+          </div>
+          <div class="timeline" data-timeline aria-hidden="true"></div>
+          <div class="tl-scale" aria-hidden="true"><span>:00</span><span>:15</span><span>:30</span><span>:45</span><span>:60</span></div>
+          <p class="tl-summary" data-tl-summary aria-live="polite"></p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="player" data-player>
+    <span class="p-art" data-p-art style={artStyle(4)} aria-hidden="true"></span>
+    <div class="p-meta">
+      <strong data-p-track>Velvet Morning</strong>
+      <span><span data-p-artist>Otis Calloway</span> · <span data-p-station>Nu Jazz Brunch</span></span>
+    </div>
+    <div class="p-where">
+      <span class="eq" data-p-eq aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span data-p-zone>Chicago · Restaurant</span>
+    </div>
+    <div class="p-controls">
+      <button type="button" class="p-btn" data-like="down" aria-label="Dislike: play fewer songs like this">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H6.7a2 2 0 0 0-2 1.7l-1.4 9A2 2 0 0 0 5.3 15zM17 2h3v11h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+      </button>
+      <button type="button" class="p-btn p-play" data-playpause aria-label="Pause" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="i-pause"><path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><path d="M8 5l11 7-11 7z" fill="currentColor"></path></svg>
+      </button>
+      <button type="button" class="p-btn" data-like="up" aria-label="Like: play more songs like this">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.3a2 2 0 0 0 2-1.7l1.4-9A2 2 0 0 0 19.7 9zM7 22H4V11h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+      </button>
+    </div>
+    <span class="p-progress" aria-hidden="true"><i data-p-progress></i></span>
+  </div>
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+</div>
+
+<style>
+  .app {
+    --app-line: #e7ecec;
+    position: relative;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgb(0 0 0 / 6%);
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 0.92rem;
+    text-align: left;
+  }
+  .app-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #f6f8f8;
+    border-bottom: 1px solid var(--app-line);
+  }
+  .dots {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .dots i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #e1e4e4;
+  }
+  .dots i:nth-child(1) {
+    background: var(--red);
+  }
+  .dots i:nth-child(2) {
+    background: var(--yellow-strong);
+  }
+  .dots i:nth-child(3) {
+    background: var(--teal);
+  }
+  .url {
+    flex: 1;
+    max-width: 320px;
+    margin-inline: auto;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--white);
+    border: 1px solid var(--app-line);
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+  .acct {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+  .avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: var(--white);
+    display: grid;
+    place-items: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+  .acct-name {
+    display: none;
+  }
+  .app-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-nav {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--app-line);
+    background: #fbfcfc;
+    scrollbar-width: none;
+  }
+  .app-nav button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    border: 0;
+    background: transparent;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-weight: 600;
+    color: var(--charcoal);
+    cursor: pointer;
+  }
+  .app-nav svg {
+    width: 18px;
+    height: 18px;
+  }
+  .app-nav button:hover {
+    background: var(--teal-50);
+  }
+  .app-nav button[aria-selected="true"] {
+    background: var(--teal-strong);
+    color: var(--white);
+  }
+  .nav-foot {
+    display: none;
+  }
+  .app-main {
+    position: relative;
+    min-height: 430px;
+  }
+  .panel {
+    padding: 18px;
+    animation: panel-in 0.35s var(--ease);
+  }
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  .panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .panel-head h3 {
+    font-size: 1.2rem;
+    margin: 0 0 2px;
+  }
+  .panel-head p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .mini-btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: var(--red);
+    color: var(--white);
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .mini-btn:hover {
+    background: var(--red-strong);
+  }
+
+  /* Locations */
+  .zones-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--app-line);
+    border-radius: 12px;
+  }
+  .zones {
+    font-size: 0.85rem;
+    min-width: 520px;
+  }
+  .zones thead th {
+    background: #ee8b9b;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+  }
+  .zones td,
+  .zones th {
+    padding: 8px 12px;
+    border-color: var(--app-line);
+  }
+  .loc-row th {
+    background: var(--teal-50);
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  .loc-city {
+    font-weight: 500;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-left: 6px;
+  }
+  .zone-btn {
+    border: 0;
+    background: none;
+    padding: 0 0 0 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+  }
+  .zone-btn::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin-top: -3.5px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line-strong);
+  }
+  .zone-row.selected {
+    background: var(--yellow-50);
+  }
+  .zone-row.selected .zone-btn::before {
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+  .device {
+    color: var(--muted);
+  }
+  .playing {
+    transition:
+      background-color 0.4s,
+      color 0.4s;
+  }
+  .playing.flash {
+    background: var(--lime);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  .status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .status.online {
+    color: var(--green);
+  }
+  .status.online::before {
+    background: var(--green);
+    box-shadow: 0 0 0 3px rgb(31 154 111 / 18%);
+  }
+  .status.offline {
+    color: var(--red);
+  }
+  .status.offline::before {
+    background: var(--red);
+  }
+  .status.idle {
+    color: var(--muted);
+  }
+  .status.idle::before {
+    background: var(--line-strong);
+  }
+
+  /* Stations */
+  .energy {
+    display: grid;
+    gap: 2px;
+    width: min(100%, 240px);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .energy-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+  }
+  .genres {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    scrollbar-width: thin;
+  }
+  .genre {
+    flex: none;
+    border: 1px solid var(--app-line);
+    background: var(--white);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--charcoal);
+  }
+  .genre[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+  }
+  .stations {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .stations li[hidden] {
+    display: none;
+  }
+  .station {
+    display: grid;
+    gap: 3px;
+    width: 100%;
+    border: 0;
+    background: none;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+  }
+  .art {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 6%);
+    transition: transform 0.25s var(--ease);
+    position: relative;
+  }
+  .station:hover .art {
+    transform: scale(1.03);
+  }
+  .station.playing-now .art::after {
+    content: "▶ Playing";
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    background: var(--white);
+    color: var(--ink);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 999px;
+  }
+  .s-name {
+    font-weight: 700;
+    font-size: 0.8rem;
+    line-height: 1.25;
+    margin-top: 4px;
+  }
+  .s-desc {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .s-energy {
+    display: flex;
+    gap: 2px;
+  }
+  .s-energy i {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--app-line);
+  }
+  .s-energy i.on {
+    background: var(--orange);
+  }
+  .empty {
+    color: var(--muted);
+  }
+
+  /* Mixes */
+  .mix {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mix-rows {
+    display: grid;
+    gap: 10px;
+  }
+  .mix-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 46px;
+    grid-template-areas: "sw sel out" "sw rng rng";
+    align-items: center;
+    gap: 4px 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--app-line);
+    border-radius: 12px;
+  }
+  .swatch {
+    grid-area: sw;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+  .mix-row select {
+    grid-area: sel;
+    border: 0;
+    font-weight: 700;
+    background: transparent;
+    padding: 2px 0;
+    min-width: 0;
+  }
+  .mix-row input {
+    grid-area: rng;
+  }
+  .mix-row output {
+    grid-area: out;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .mix-viz {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .donut {
+    width: 120px;
+    height: 120px;
+    transform: rotate(-90deg);
+  }
+  .donut :global(circle.seg) {
+    transition:
+      stroke-dasharray 0.4s var(--ease),
+      stroke-dashoffset 0.4s var(--ease);
+  }
+  .mix-energy span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .mix-energy strong {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+  }
+  .queue h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .queue ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+  .queue :global(li) {
+    display: grid;
+    grid-template-columns: 8px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+  }
+  .queue :global(li i) {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .queue :global(li em) {
+    font-style: normal;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  /* Schedules */
+  .sched-detail {
+    font-size: 0.85rem;
+    color: var(--teal-deep);
+    font-weight: 600;
+    margin: 0;
+    background: var(--teal-50);
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+  .sched-scroll {
+    overflow-x: auto;
+  }
+  .sched {
+    display: grid;
+    grid-template-columns: 40px repeat(7, minmax(58px, 1fr));
+    gap: 5px;
+    min-width: 500px;
+    height: 330px;
+    position: relative;
+    padding-top: 22px;
+  }
+  .hours {
+    position: relative;
+  }
+  .hours span {
+    position: absolute;
+    right: 4px;
+    transform: translateY(-50%);
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .day {
+    position: relative;
+  }
+  .day-name {
+    position: absolute;
+    top: -22px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--charcoal);
+  }
+  .day-track {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, transparent 0 calc(100% / 6 - 1px), var(--app-line) calc(100% / 6 - 1px) calc(100% / 6));
+    border-radius: 8px;
+  }
+  .block {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    border: 0;
+    border-radius: 7px;
+    padding: 4px 6px;
+    color: var(--white);
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 10%);
+    transition:
+      transform 0.2s var(--ease),
+      box-shadow 0.2s;
+  }
+  .block span {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.2;
+    background: rgb(0 0 0 / 55%);
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+  .block:hover,
+  .block.active {
+    transform: scale(1.04);
+    z-index: 2;
+    box-shadow:
+      0 0 0 2px var(--white),
+      0 0 0 4px var(--ink);
+  }
+  .now-line {
+    position: absolute;
+    left: -3px;
+    right: -3px;
+    height: 2px;
+    background: var(--red);
+    z-index: 3;
+  }
+  .now-line::before {
+    content: "";
+    position: absolute;
+    left: -2px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+
+  /* Messages */
+  .msgs {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .msg {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border: 1px solid var(--app-line);
+    border-radius: 12px;
+  }
+  .switch {
+    grid-row: span 2;
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+  }
+  .switch input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+  .switch .track {
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--line-strong);
+    position: relative;
+    transition: background-color 0.2s;
+  }
+  .switch .track::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--white);
+    transition: transform 0.2s var(--ease);
+    box-shadow: var(--shadow-sm);
+  }
+  .switch input:checked + .track {
+    background: var(--teal-strong);
+  }
+  .switch input:checked + .track::after {
+    transform: translateX(16px);
+  }
+  .switch input:focus-visible + .track {
+    outline: 3px solid var(--yellow-strong);
+    outline-offset: 2px;
+  }
+  .msg-title {
+    font-weight: 700;
+  }
+  .msg-type,
+  .msg-group {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .msg-type {
+    grid-column: 2;
+  }
+  .msg-group {
+    display: none;
+  }
+  .timeline-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .timeline-head h4 {
+    font-size: 0.85rem;
+    margin: 0 0 8px;
+  }
+  .legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .legend i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .lg-song {
+    background: var(--teal-200);
+  }
+  .lg-msg {
+    background: var(--red);
+    margin-left: 8px;
+  }
+  .timeline {
+    position: relative;
+    height: 44px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    background: var(--teal-50);
+  }
+  .timeline :global(.song) {
+    height: 100%;
+    border-right: 2px solid var(--white);
+    background: var(--teal-200);
+  }
+  .timeline :global(.song:nth-child(odd)) {
+    background: var(--teal-100);
+  }
+  .timeline :global(.mk) {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 8px;
+    margin-left: -4px;
+    border-radius: 4px;
+    background: var(--red);
+    animation: pop 0.3s var(--ease);
+  }
+  .timeline :global(.mk.alt) {
+    background: var(--orange);
+  }
+  @keyframes pop {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  .tl-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .tl-summary {
+    font-size: 0.82rem;
+    color: var(--charcoal);
+    margin: 8px 0 0;
+  }
+
+  /* Player */
+  .player {
+    position: relative;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px 14px;
+    background: var(--night);
+    color: var(--white);
+  }
+  .p-art {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+  .p-meta {
+    display: grid;
+    min-width: 0;
+  }
+  .p-meta strong {
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .p-meta span {
+    font-size: 0.78rem;
+    color: #a9c2c6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .p-where {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+  .p-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .p-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 0;
+    background: rgb(255 255 255 / 8%);
+    color: var(--white);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .p-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .p-btn:hover {
+    background: rgb(255 255 255 / 16%);
+  }
+  .p-btn.liked {
+    background: var(--teal);
+  }
+  .p-play {
+    width: 40px;
+    height: 40px;
+    background: var(--yellow);
+    color: var(--ink);
+  }
+  .p-play:hover {
+    background: var(--yellow-strong);
+  }
+  .p-play .i-play {
+    display: none;
+  }
+  .p-play[aria-pressed="false"] .i-play {
+    display: block;
+  }
+  .p-play[aria-pressed="false"] .i-pause {
+    display: none;
+  }
+  .p-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: rgb(255 255 255 / 10%);
+  }
+  .p-progress i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--teal);
+  }
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 84px;
+    transform: translate(-50%, 20px);
+    opacity: 0;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--white);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+    transition:
+      opacity 0.3s,
+      transform 0.3s var(--ease);
+    width: max-content;
+    max-width: calc(100% - 32px);
+    z-index: 5;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  @media (min-width: 720px) {
+    .acct-name {
+      display: inline;
+    }
+    .app-body {
+      grid-template-columns: 188px 1fr;
+    }
+    .app-nav {
+      flex-direction: column;
+      border-bottom: 0;
+      border-right: 1px solid var(--app-line);
+      padding: 14px 10px;
+      overflow: visible;
+    }
+    .nav-foot {
+      display: grid;
+      gap: 2px;
+      margin-top: auto;
+      padding: 12px 10px 4px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .lic {
+      font-weight: 800;
+      color: var(--green);
+    }
+    .panel {
+      padding: 22px 24px;
+    }
+    .mix {
+      grid-template-columns: 1.2fr 1fr;
+    }
+    .queue {
+      grid-column: 1 / -1;
+    }
+    .msg {
+      grid-template-columns: auto 1fr auto;
+    }
+    .msg-group {
+      display: inline;
+      grid-row: 1 / span 2;
+      grid-column: 3;
+      background: var(--paper-2);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .player {
+      grid-template-columns: 44px 1fr auto auto;
+    }
+    .p-where {
+      display: inline-flex;
+    }
+  }
+</style>
+
+<script>
+  import { STATIONS, TRACKS, LOCATIONS, artStyle } from "../data/demo";
+
+  const ENERGY = ["Any", "Mellow", "Relaxed", "Balanced", "Lively", "Upbeat"];
+  const STATION_COLOURS = ["#00909f", "#b12b34", "#e8501d", "#1f9a6f", "#3d4347", "#ef8fa0", "#003439", "#822c18"];
+  const idx = (sid: string) => STATIONS.findIndex((s) => s.id === sid);
+  const colour = (sid: string) => STATION_COLOURS[idx(sid) % STATION_COLOURS.length];
+  const tracks = TRACKS.default;
+
+  function initApp(root: HTMLElement) {
+    const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector<T>(sel);
+    const $$ = <T extends Element = HTMLElement>(sel: string) => Array.from(root.querySelectorAll<T>(sel));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // ---------- Toast
+    const toastEl = $("[data-toast]")!;
+    let toastTimer = 0;
+    const toast = (msg: string) => {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toastEl.classList.remove("show"), 3200);
+    };
+
+    // ---------- Tabs (roving tabindex, arrow keys)
+    const tabs = $$<HTMLButtonElement>("[data-tab]");
+    const panels = $$("[data-panel]");
+    const select = (id: string, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t.dataset.tab === id;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      panels.forEach((p) => (p.hidden = p.dataset.panel !== id));
+      root.dispatchEvent(new CustomEvent("app:tab", { detail: id }));
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t.dataset.tab!));
+      t.addEventListener("keydown", (e) => {
+        const k = e.key;
+        if (!["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(k)) return;
+        e.preventDefault();
+        let n = i;
+        if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % tabs.length;
+        if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + tabs.length) % tabs.length;
+        if (k === "Home") n = 0;
+        if (k === "End") n = tabs.length - 1;
+        select(tabs[n].dataset.tab!, true);
+      });
+    });
+    (root as any).selectTab = select;
+
+    // ---------- Player
+    const pArt = $("[data-p-art]")!;
+    const pTrack = $("[data-p-track]")!;
+    const pArtist = $("[data-p-artist]")!;
+    const pStation = $("[data-p-station]")!;
+    const pZone = $("[data-p-zone]")!;
+    const pEq = $("[data-p-eq]")!;
+    const pProg = $("[data-p-progress]")!;
+    const playBtn = $<HTMLButtonElement>("[data-playpause]")!;
+    let playing = true;
+    let progress = 0;
+    let trackI = 3;
+    const setTrack = (stationName: string, artIndex: number) => {
+      trackI = (trackI + 1 + Math.floor(Math.random() * 3)) % tracks.length;
+      const [t, a] = tracks[trackI];
+      pTrack.textContent = t;
+      pArtist.textContent = a;
+      pStation.textContent = stationName;
+      pArt.setAttribute("style", artStyle(artIndex));
+      progress = 0;
+      $$("[data-like]").forEach((b) => b.classList.remove("liked"));
+    };
+    playBtn.addEventListener("click", () => {
+      playing = !playing;
+      playBtn.setAttribute("aria-pressed", String(playing));
+      playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+      pEq.classList.toggle("paused", !playing);
+    });
+    $$<HTMLButtonElement>("[data-like]").forEach((b) =>
+      b.addEventListener("click", () => {
+        $$("[data-like]").forEach((x) => x.classList.remove("liked"));
+        b.classList.add("liked");
+        toast(b.dataset.like === "up" ? "Got it. We'll play more like this." : "Noted. We'll play fewer songs like this.");
+      }),
+    );
+    if (!reduced) {
+      window.setInterval(() => {
+        if (!playing || root.offsetParent === null) return;
+        progress += 0.6;
+        if (progress >= 100) {
+          const sName = pStation.textContent || "";
+          const s = STATIONS.find((x) => x.name === sName);
+          setTrack(sName, s ? idx(s.id) : 4);
+        }
+        pProg.style.width = `${progress}%`;
+      }, 200);
+    }
+
+    // ---------- Locations
+    const zoneRows = $$<HTMLTableRowElement>(".zone-row");
+    const selectZone = (key: string) => {
+      zoneRows.forEach((r) => r.classList.toggle("selected", r.dataset.zone === key));
+      const [li, zi] = key.split("-").map(Number);
+      const loc = LOCATIONS[li];
+      const row = zoneRows.find((r) => r.dataset.zone === key)!;
+      const playingText = row.querySelector("[data-playing]")!.textContent || "";
+      const s = STATIONS.find((x) => x.name === playingText);
+      pZone.textContent = `${loc.city.split(",")[0]} · ${loc.zones[zi].name}`;
+      setTrack(playingText, s ? idx(s.id) : 8);
+    };
+    $$<HTMLButtonElement>("[data-select-zone]").forEach((b) => b.addEventListener("click", () => selectZone(b.dataset.selectZone!)));
+    selectZone("0-1");
+
+    $("[data-push]")?.addEventListener("click", () => {
+      let delivered = 0;
+      let queued = 0;
+      zoneRows.forEach((r, i) => {
+        const cell = r.querySelector<HTMLElement>("[data-playing]")!;
+        window.setTimeout(() => {
+          if (r.dataset.status === "offline") {
+            cell.textContent = "Eclectic Lounge (queued)";
+            queued++;
+          } else {
+            cell.textContent = "Eclectic Lounge";
+            delivered++;
+          }
+          cell.classList.add("flash");
+          window.setTimeout(() => cell.classList.remove("flash"), 700);
+          if (i === zoneRows.length - 1) {
+            toast(`Pushed to ${delivered} zones.` + (queued ? ` ${queued} offline zone${queued === 1 ? "" : "s"} will update on reconnect.` : ""));
+            const sel = zoneRows.find((z) => z.classList.contains("selected"));
+            if (sel) selectZone(sel.dataset.zone!);
+          }
+        }, reduced ? 0 : i * 140);
+      });
+    });
+
+    // ---------- Stations
+    const genreBtns = $$<HTMLButtonElement>("[data-genre]");
+    const energy = $<HTMLInputElement>("[data-energy]")!;
+    const energyLabel = $("[data-energy-label]")!;
+    const items = $$<HTMLLIElement>("[data-station]");
+    const countEl = $("[data-station-count]")!;
+    const emptyEl = $("[data-empty]")!;
+    let genre = "All";
+    const filter = () => {
+      const e = Number(energy.value);
+      energyLabel.textContent = ENERGY[e];
+      let n = 0;
+      items.forEach((li) => {
+        const okG = genre === "All" || li.dataset.genre === genre;
+        const okE = e === 0 || Math.abs(Number(li.dataset.e) - e) <= 1;
+        li.hidden = !(okG && okE);
+        if (!li.hidden) n++;
+      });
+      countEl.textContent = String(n);
+      emptyEl.hidden = n > 0;
+    };
+    genreBtns.forEach((b) =>
+      b.addEventListener("click", () => {
+        genre = b.dataset.genre!;
+        genreBtns.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        filter();
+      }),
+    );
+    energy.addEventListener("input", filter);
+    $$<HTMLButtonElement>("[data-play-station]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const s = STATIONS.find((x) => x.id === b.dataset.playStation)!;
+        $$(".station").forEach((x) => x.classList.remove("playing-now"));
+        b.classList.add("playing-now");
+        setTrack(s.name, idx(s.id));
+        toast(`Now playing ${s.name} in ${pZone.textContent}`);
+      }),
+    );
+
+    // ---------- Mixes
+    const rows = $$<HTMLElement>("[data-mix-row]");
+    const donut = $<SVGSVGElement>("[data-donut]")!;
+    const mixEnergy = $("[data-mix-energy]")!;
+    const queue = $("[data-queue]")!;
+    const C = 2 * Math.PI * 44;
+    const drawMix = () => {
+      const parts = rows.map((r) => {
+        const sid = r.querySelector<HTMLSelectElement>("[data-mix-station]")!.value;
+        const w = Number(r.querySelector<HTMLInputElement>("[data-mix-weight]")!.value);
+        r.querySelector("[data-mix-out]")!.textContent = `${w}%`;
+        r.querySelector(".swatch")!.setAttribute("style", artStyle(idx(sid)));
+        return { sid, w };
+      });
+      const total = parts.reduce((a, p) => a + p.w, 0) || 1;
+      donut.querySelectorAll(".seg").forEach((n) => n.remove());
+      let offset = 0;
+      parts.forEach((p) => {
+        const len = (p.w / total) * C;
+        const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c.setAttribute("class", "seg");
+        c.setAttribute("cx", "60");
+        c.setAttribute("cy", "60");
+        c.setAttribute("r", "44");
+        c.setAttribute("fill", "none");
+        c.setAttribute("stroke", colour(p.sid));
+        c.setAttribute("stroke-width", "18");
+        c.setAttribute("stroke-dasharray", `${Math.max(len - 2, 0)} ${C}`);
+        c.setAttribute("stroke-dashoffset", String(-offset));
+        donut.appendChild(c);
+        offset += len;
+      });
+      const avg = parts.reduce((a, p) => a + (STATIONS[idx(p.sid)].energy * p.w) / total, 0);
+      mixEnergy.textContent = ENERGY[Math.min(5, Math.max(1, Math.round(avg)))];
+      // Deterministic weighted queue
+      queue.innerHTML = "";
+      let seed = parts.reduce((a, p) => a + p.w * (idx(p.sid) + 3), 7);
+      for (let i = 0; i < 5; i++) {
+        seed = (seed * 9301 + 49297) % 233280;
+        let r = (seed / 233280) * total;
+        const pick = parts.find((p) => (r -= p.w) < 0) || parts[0];
+        const [t, a] = tracks[(seed + i) % tracks.length];
+        const li = document.createElement("li");
+        li.innerHTML = `<i style="background:${colour(pick.sid)}"></i><span>${t} <em>· ${a}</em></span><em>${STATIONS[idx(pick.sid)].name}</em>`;
+        queue.appendChild(li);
+      }
+    };
+    rows.forEach((r) => {
+      r.querySelector("[data-mix-weight]")!.addEventListener("input", drawMix);
+      r.querySelector("[data-mix-station]")!.addEventListener("change", drawMix);
+    });
+    drawMix();
+    $("[data-play-mix]")?.addEventListener("click", () => {
+      setTrack("Sunday Brunch Mix", 9);
+      toast(`Sunday Brunch Mix is playing in ${pZone.textContent}`);
+    });
+
+    // ---------- Schedules
+    const detail = $("[data-sched-detail]")!;
+    const blocks = $$<HTMLButtonElement>("[data-block]");
+    const fmt = (h: number) => `${String(h % 24).padStart(2, "0")}:00`;
+    blocks.forEach((b) =>
+      b.addEventListener("click", () => {
+        const [day, s, e, name] = b.dataset.block!.split("|");
+        blocks.forEach((x) => x.classList.toggle("active", x === b));
+        detail.textContent = `${day} ${fmt(+s)}–${fmt(+e)} · ${name}`;
+      }),
+    );
+    const now = new Date();
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    let h = now.getHours() + now.getMinutes() / 60;
+    let dName = dayNames[now.getDay()];
+    if (h < 6) {
+      h = 13.3;
+      dName = "Thu";
+    }
+    const dayEl = $(`[data-day="${dName}"]`);
+    const line = dayEl?.querySelector<HTMLElement>("[data-now-line]");
+    if (line) {
+      line.hidden = false;
+      line.style.top = `${((h - 6) / 18) * 100}%`;
+      const cur = Array.from(dayEl!.querySelectorAll<HTMLButtonElement>("[data-block]")).find((b) => {
+        const [, s, e] = b.dataset.block!.split("|");
+        return h >= +s && h < +e;
+      });
+      if (cur) {
+        cur.classList.add("active");
+        const [day, s, e, name] = cur.dataset.block!.split("|");
+        detail.textContent = `Now: ${day} ${fmt(+s)}–${fmt(+e)} · ${name}`;
+      }
+    }
+
+    // ---------- Messages
+    const timeline = $("[data-timeline]")!;
+    const summary = $("[data-tl-summary]")!;
+    const msgInputs = $$<HTMLInputElement>("[data-msg]");
+    const songLens = [3.6, 4.1, 3.2, 3.9, 4.4, 3.3, 3.8, 4.0, 3.5, 4.2, 3.7, 4.0, 3.4, 4.3, 3.6, 3.0];
+    let acc = 0;
+    for (const len of songLens) {
+      if (acc >= 60) break;
+      const w = Math.min(len, 60 - acc);
+      const s = document.createElement("span");
+      s.className = "song";
+      s.style.width = `${(w / 60) * 100}%`;
+      timeline.appendChild(s);
+      acc += w;
+    }
+    const drawMsgs = () => {
+      timeline.querySelectorAll(".mk").forEach((m) => m.remove());
+      let count = 0;
+      const names: string[] = [];
+      msgInputs.forEach((inp, i) => {
+        if (!inp.checked) return;
+        const mins: number[] = [];
+        if (inp.dataset.type === "interval") {
+          const every = Number(inp.dataset.every);
+          for (let m = every; m < 60; m += every) mins.push(m);
+        } else {
+          mins.push(Number(inp.dataset.at!.replace(":", "")));
+        }
+        mins.forEach((m) => {
+          const mk = document.createElement("span");
+          mk.className = `mk${i % 2 ? " alt" : ""}`;
+          mk.style.left = `${(m / 60) * 100}%`;
+          timeline.appendChild(mk);
+          count++;
+        });
+        names.push(inp.closest(".msg")!.querySelector(".msg-title")!.textContent || "");
+      });
+      summary.textContent = count
+        ? `${count} message${count > 1 ? "s" : ""} play between songs in the next hour, never over the music.`
+        : "No messages scheduled. Music plays uninterrupted.";
+    };
+    msgInputs.forEach((inp) => inp.addEventListener("change", drawMsgs));
+    drawMsgs();
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-app]").forEach(initApp);
+
+  // External controls: any [data-app-goto="schedules"] switches the demo's tab.
+  document.addEventListener("click", (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>("[data-app-goto]");
+    if (!t) return;
+    const app = document.querySelector<HTMLElement>(t.dataset.appTarget || "[data-app]") as any;
+    app?.selectTab?.(t.dataset.appGoto);
+  });
+</script>

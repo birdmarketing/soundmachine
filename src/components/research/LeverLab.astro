@@ -1,0 +1,268 @@
+---
+// Illustrative model of directional effects reported in music-and-behaviour research.
+// Not a prediction tool. The page says so next to the outputs.
+const VOL = ["Whisper", "Low", "Conversational", "Lively", "Loud"];
+---
+
+<div class="lab" data-lab data-vol={JSON.stringify(VOL)}>
+  <div class="controls">
+    <label>
+      <span class="lbl">Tempo <strong data-o-tempo>96 BPM</strong></span>
+      <input type="range" min="60" max="140" value="96" data-in="tempo" aria-label="Tempo in beats per minute" />
+      <span class="scale"><span>Slow</span><span>Fast</span></span>
+    </label>
+    <label>
+      <span class="lbl">Volume <strong data-o-vol>Conversational</strong></span>
+      <input type="range" min="1" max="5" value="3" data-in="vol" aria-label="Volume" />
+      <span class="scale"><span>Whisper</span><span>Loud</span></span>
+    </label>
+    <label>
+      <span class="lbl">Brand fit <strong data-o-fit>60%</strong></span>
+      <input type="range" min="0" max="100" value="60" data-in="fit" aria-label="How well the music fits your brand" />
+      <span class="scale"><span>Random hits</span><span>On-brand</span></span>
+    </label>
+    <label>
+      <span class="lbl">Familiarity <strong data-o-fam>50%</strong></span>
+      <input type="range" min="0" max="100" value="50" data-in="fam" aria-label="How familiar the music is" />
+      <span class="scale"><span>Discovery</span><span>Familiar</span></span>
+    </label>
+    <div class="presets" role="group" aria-label="Presets">
+      <span>Try:</span>
+      <button type="button" data-preset="96,3,60,50">Default</button>
+      <button type="button" data-preset="72,2,85,55">Fine dining</button>
+      <button type="button" data-preset="124,4,70,70">Lunch rush</button>
+      <button type="button" data-preset="66,2,75,80">Waiting room</button>
+      <button type="button" data-preset="118,5,20,90">Staff's choice</button>
+    </div>
+  </div>
+  <div class="outputs" aria-live="polite">
+    <p class="o-title">Directional effect vs no music</p>
+    <ul>
+      <li data-out="dwell"><span class="o-name">Time spent</span><span class="o-bar"><i></i></span><strong>+0%</strong></li>
+      <li data-out="spend"><span class="o-name">Spend per visit</span><span class="o-bar"><i></i></span><strong>+0%</strong></li>
+      <li data-out="pace"><span class="o-name">Pace &amp; turnover</span><span class="o-bar"><i></i></span><strong>+0%</strong></li>
+      <li data-out="wait"><span class="o-name">Perceived wait</span><span class="o-bar"><i></i></span><strong>+0%</strong></li>
+    </ul>
+    <p class="o-read" data-o-read></p>
+    <p class="o-note">
+      Illustrative model only. It reflects the direction of published findings on tempo, volume, congruence and familiarity, not a forecast for your business.
+    </p>
+  </div>
+</div>
+
+<style>
+  .lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    background: var(--white);
+  }
+  @media (min-width: 960px) {
+    .lab {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .controls {
+    padding: clamp(22px, 3.5vw, 40px);
+    display: grid;
+    gap: 18px;
+  }
+  label {
+    display: grid;
+    gap: 2px;
+  }
+  .lbl {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+  .lbl strong {
+    color: var(--teal-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .presets button {
+    border: 1px solid var(--line-strong);
+    background: var(--paper);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .presets button:hover {
+    border-color: var(--teal);
+  }
+  .outputs {
+    padding: clamp(22px, 3.5vw, 40px);
+    background: var(--night);
+    color: #d6e5e7;
+  }
+  .o-title {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #8fb0b5;
+  }
+  .outputs ul {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid;
+    gap: 16px;
+  }
+  .outputs li {
+    display: grid;
+    grid-template-columns: 130px 1fr 64px;
+    align-items: center;
+    gap: 12px;
+  }
+  .o-name {
+    font-weight: 600;
+    color: var(--white);
+  }
+  .o-bar {
+    position: relative;
+    height: 14px;
+    border-radius: 7px;
+    background: rgb(255 255 255 / 8%);
+  }
+  .o-bar::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: rgb(255 255 255 / 35%);
+  }
+  .o-bar i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    border-radius: 7px;
+    background: var(--lime);
+    transition:
+      width 0.35s var(--ease),
+      left 0.35s var(--ease),
+      background-color 0.3s;
+  }
+  .o-bar i.neg {
+    background: var(--orange);
+  }
+  .o-bar i.neutral {
+    background: var(--yellow);
+  }
+  .outputs strong {
+    text-align: right;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--white);
+    font-variant-numeric: tabular-nums;
+  }
+  .o-read {
+    min-height: 3em;
+    color: var(--yellow);
+    font-weight: 600;
+  }
+  .o-note {
+    font-size: 0.82rem;
+    color: #8fb0b5;
+    margin: 0;
+    border-left: 3px solid var(--orange);
+    padding-left: 12px;
+  }
+  @media (max-width: 520px) {
+    .outputs li {
+      grid-template-columns: 1fr 56px;
+    }
+    .o-bar {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-lab]").forEach((root) => {
+    const VOL: string[] = JSON.parse(root.dataset.vol!);
+    const inp = (k: string) => root.querySelector<HTMLInputElement>(`[data-in="${k}"]`)!;
+    const set = (sel: string, v: string) => (root.querySelector<HTMLElement>(sel)!.textContent = v);
+    const clamp = (n: number, a = -30, b = 30) => Math.max(a, Math.min(b, n));
+    const update = () => {
+      const t = +inp("tempo").value;
+      const v = +inp("vol").value;
+      const f = +inp("fit").value;
+      const m = +inp("fam").value;
+      set("[data-o-tempo]", `${t} BPM`);
+      set("[data-o-vol]", VOL[v - 1]);
+      set("[data-o-fit]", `${f}%`);
+      set("[data-o-fam]", `${m}%`);
+      const loud = Math.max(0, v - 3);
+      const out = {
+        dwell: clamp(4 + (100 - t) * 0.3 + (f - 50) * 0.08 - loud * 6),
+        spend: clamp(2 + (f - 50) * 0.18 + (100 - t) * 0.07 - loud * 4 - (v === 1 ? 2 : 0)),
+        pace: clamp((t - 100) * 0.32 + (v - 3) * 2),
+        wait: clamp(-4 - m * 0.16 - (v >= 2 && v <= 3 ? 4 : 0) + loud * 5),
+      };
+      (Object.keys(out) as (keyof typeof out)[]).forEach((k) => {
+        const val = Math.round(out[k]);
+        const li = root.querySelector<HTMLElement>(`[data-out="${k}"]`)!;
+        const bar = li.querySelector<HTMLElement>("i")!;
+        const w = (Math.abs(val) / 30) * 50;
+        bar.style.width = `${w}%`;
+        bar.style.left = val >= 0 ? "50%" : `${50 - w}%`;
+        // For perceived wait, lower is better. Pace is neither good nor bad, so it stays neutral.
+        const good = k === "wait" ? val <= 0 : val >= 0;
+        bar.classList.toggle("neg", k !== "pace" && !good);
+        bar.classList.toggle("neutral", k === "pace");
+        li.querySelector("strong")!.textContent = `${val > 0 ? "+" : ""}${val}%`;
+      });
+      let read = "A balanced, on-brand setting: a good all-day default.";
+      if (m >= 70 && v <= 3) read = "Familiar music at a comfortable volume makes waiting feel shorter.";
+      else if (t <= 80 && f >= 70) read = "Slow and on-brand: people linger and spend. Great for fine dining and premium retail.";
+      else if (t >= 115 && v >= 4 && f < 40) read = "Fast, loud and off-brand: pace goes up, but the experience and spend suffer.";
+      else if (t >= 115) read = "High energy speeds things up: use it at peak times to turn tables and move queues.";
+      else if (v >= 5) read = "Too loud: volume above conversation level pushes people out the door.";
+      set("[data-o-read]", read);
+    };
+    root.querySelectorAll<HTMLInputElement>("[data-in]").forEach((i) => i.addEventListener("input", update));
+    root.querySelectorAll<HTMLButtonElement>("[data-preset]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const [t, v, f, m] = b.dataset.preset!.split(",");
+        const pairs: [string, string][] = [
+          ["tempo", t],
+          ["vol", v],
+          ["fit", f],
+          ["fam", m],
+        ];
+        pairs.forEach(([k, val]) => {
+          const el = inp(k);
+          el.value = val;
+          el.dispatchEvent(new Event("input"));
+        });
+      }),
+    );
+    update();
+  });
+</script>

@@ -1,0 +1,233 @@
+---
+// Direct licensing vs SoundMachine. Figures from sound-machine.com licensing pages.
+interface Props {
+  region: "us" | "ca";
+}
+const { region } = Astro.props;
+const US = {
+  currency: "$",
+  sm: 323.4,
+  smLabel: "SoundMachine Business, billed annually",
+  smNote: "All four US PROs for background music, plus stations, scheduling, messaging and integrations.",
+  low: [
+    { name: "ASCAP", v: 390, note: "from ~$390" },
+    { name: "BMI", v: 250, note: "from $250" },
+    { name: "SESAC", v: null, note: "rate not published" },
+    { name: "GMR", v: null, note: "rate not published" },
+  ],
+  high: [
+    { name: "ASCAP", v: 390, note: "from ~$390" },
+    { name: "BMI", v: 2000, note: "up to $2,000" },
+    { name: "SESAC", v: null, note: "rate not published" },
+    { name: "GMR", v: null, note: "rate not published" },
+  ],
+  extra: "Plus a commercial music service and hardware, which direct licences don't include.",
+};
+const CA = {
+  currency: "CA$",
+  sm: 400,
+  smLabel: "SoundMachine annual licence (approx.)",
+  smNote: "SOCAN and Re:Sound for background music, plus the full SoundMachine platform.",
+  low: [
+    { name: "SOCAN", v: 150, note: "from ~CA$150" },
+    { name: "Re:Sound", v: 140, note: "from ~CA$140" },
+  ],
+  high: [
+    { name: "SOCAN", v: 200, note: "~CA$200 for small venues" },
+    { name: "Re:Sound", v: 300, note: "up to ~CA$300" },
+  ],
+  extra: "Direct licence fees rise for larger venues, live music and dance floors, and don't include a music service.",
+};
+const cfg = region === "us" ? US : CA;
+const data = JSON.stringify(cfg);
+const scaleMax = region === "us" ? 3000 : 700;
+const COLORS = ["var(--teal)", "var(--red)", "var(--orange)", "var(--brown)"];
+---
+
+<div class="cc" data-cc data-config={data} data-scale={scaleMax}>
+  <div class="cc-head">
+    <div>
+      <h3>Licensing directly vs SoundMachine</h3>
+      <p class="muted">Typical annual cost for one small location.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Estimate">
+      <button type="button" aria-pressed="true" data-est="low">Low estimate</button>
+      <button type="button" aria-pressed="false" data-est="high">High estimate</button>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row">
+      <div class="r-label">
+        <strong>Licensing directly</strong>
+        <span data-direct-total></span>
+      </div>
+      <div class="track" data-direct-track>
+        {cfg.low.map((p, i) => <span class:list={["seg-bar", p.v === null && "unknown"]} style={`--c:${COLORS[i]}`} data-seg={i} title={`${p.name}: ${p.note}`}><em>{p.name}</em></span>)}
+      </div>
+    </div>
+    <div class="row">
+      <div class="r-label">
+        <strong>{cfg.smLabel}</strong>
+        <span>{cfg.currency}{cfg.sm.toFixed(2)} a year</span>
+      </div>
+      <div class="track">
+        <span class="seg-bar sm" style={`width:${(cfg.sm / scaleMax) * 100}%`}><em>SoundMachine</em></span>
+      </div>
+    </div>
+  </div>
+  <ul class="legend" data-legend>
+    {
+      cfg.low.map((p, i) => (
+        <li style={`--c:${COLORS[i]}`} data-legend-i={i}>
+          <i class:list={[p.v === null && "unknown"]} />
+          <strong>{p.name}</strong> <span>{p.note}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="sm-note"><strong>SoundMachine includes:</strong> {cfg.smNote}</p>
+  <p class="muted small">{cfg.extra}</p>
+</div>
+
+<style>
+  .cc {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: clamp(22px, 3.5vw, 40px);
+    box-shadow: var(--shadow-sm);
+  }
+  .cc-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .cc-head h3 {
+    margin: 0 0 4px;
+  }
+  .cc-head p {
+    margin: 0;
+  }
+  .rows {
+    display: grid;
+    gap: 22px;
+  }
+  .row {
+    display: grid;
+    gap: 8px;
+  }
+  @media (min-width: 760px) {
+    .row {
+      grid-template-columns: 240px 1fr;
+      align-items: center;
+      gap: 20px;
+    }
+  }
+  .r-label {
+    display: grid;
+  }
+  .r-label span {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .track {
+    display: flex;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--paper-2);
+    overflow: hidden;
+  }
+  .seg-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    background: var(--c);
+    color: var(--white);
+    border-right: 2px solid var(--white);
+    transition: width 0.5s var(--ease);
+    min-width: 0;
+    overflow: hidden;
+  }
+  .seg-bar em {
+    font-style: normal;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .seg-bar.unknown {
+    background: repeating-linear-gradient(135deg, var(--c) 0 6px, transparent 6px 12px);
+    color: var(--ink);
+    opacity: 0.55;
+  }
+  .seg-bar.sm {
+    background: var(--teal-strong);
+  }
+  .legend {
+    list-style: none;
+    margin: 22px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 0.88rem;
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend i {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--c);
+  }
+  .legend i.unknown {
+    background: repeating-linear-gradient(135deg, var(--c) 0 3px, transparent 3px 6px);
+  }
+  .legend span {
+    color: var(--muted);
+  }
+  .sm-note {
+    margin: 20px 0 6px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--teal-50);
+  }
+</style>
+
+<script>
+  type P = { name: string; v: number | null; note: string };
+  document.querySelectorAll<HTMLElement>("[data-cc]").forEach((root) => {
+    const cfg = JSON.parse(root.dataset.config!) as { currency: string; low: P[]; high: P[] };
+    const scale = Number(root.dataset.scale);
+    const segs = root.querySelectorAll<HTMLElement>("[data-seg]");
+    const total = root.querySelector<HTMLElement>("[data-direct-total]")!;
+    const btns = root.querySelectorAll<HTMLButtonElement>("[data-est]");
+    const UNKNOWN_W = scale * 0.07; // visual placeholder width for unpublished rates
+    const draw = (mode: "low" | "high") => {
+      const set = cfg[mode];
+      let sum = 0;
+      set.forEach((p, i) => {
+        const v = p.v ?? UNKNOWN_W;
+        if (p.v) sum += p.v;
+        segs[i].style.width = `${(v / scale) * 100}%`;
+        segs[i].title = `${p.name}: ${p.note}`;
+        const legend = root.querySelector(`[data-legend-i="${i}"] span`);
+        if (legend) legend.textContent = p.note;
+      });
+      const unknown = set.some((p) => p.v === null);
+      total.textContent = `${cfg.currency}${sum.toLocaleString("en-US")}${unknown ? "+" : ""} a year`;
+      btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.est === mode)));
+    };
+    btns.forEach((b) => b.addEventListener("click", () => draw(b.dataset.est as "low" | "high")));
+    draw("low");
+  });
+</script>

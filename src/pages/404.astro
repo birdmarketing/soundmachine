@@ -1,0 +1,57 @@
+---
+import Base from "../layouts/Base.astro";
+import { NAV } from "../data/site";
+---
+
+<Base title="Page not found | SoundMachine" description="This page isn't available in the SoundMachine preview yet." path="/404">
+  <section class="nf">
+    <div class="container-narrow">
+      <span class="eq big" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <h1>This track isn't in the playlist… yet.</h1>
+      <p class="lede">
+        This preview includes SoundMachine's core pages. The rest of the site, including the industry pages, blog and FAQ, keeps the same URLs and arrives in the next phase.
+      </p>
+      <ul>
+        <li><a class="btn btn-red" href="/">Go to the homepage</a></li>
+        {
+          NAV.map((n) => (
+            <li>
+              <a class="btn btn-ghost" href={n.href}>
+                {n.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    padding: clamp(72px, 12vw, 160px) 0;
+    text-align: center;
+  }
+  .big {
+    height: 64px;
+    gap: 8px;
+    color: var(--teal);
+    margin-bottom: 24px;
+  }
+  .big i {
+    width: 12px;
+    border-radius: 6px;
+  }
+  .lede {
+    margin-inline: auto;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 32px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+</style>

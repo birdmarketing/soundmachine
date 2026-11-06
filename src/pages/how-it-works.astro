@@ -1,0 +1,305 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import AppDemo from "../components/AppDemo.astro";
+import LogoWall from "../components/LogoWall.astro";
+import CtaBand from "../components/CtaBand.astro";
+import { APP } from "../data/site";
+
+const steps = [
+  {
+    id: "choose",
+    tab: "stations",
+    n: "01",
+    title: "Choose your station",
+    text: "Pick your sound from more than 500 curated stations, from pop and indie to rock and ambient. Then use the slider to play only mellow or only upbeat songs.",
+  },
+  {
+    id: "create",
+    tab: "stations",
+    n: "02",
+    title: "Create your station",
+    text: "Import playlists from Spotify, Apple Music, Amazon Music and more. Tracks are matched to SoundMachine's licensed catalogue, so your brand playlist becomes legal to play in-store.",
+  },
+  {
+    id: "mix",
+    tab: "mixes",
+    n: "03",
+    title: "Mix stations",
+    text: "Combine stations to get the sound and variety you want, and decide how much each one weighs in the mix, all in a simple web interface.",
+  },
+  {
+    id: "schedule",
+    tab: "schedules",
+    n: "04",
+    title: "Schedule stations and mixes",
+    text: "Match music to the time of day: the most upbeat music for busy hours, mellower tunes for relaxed moments. Build an atmosphere that fits your business hour by hour.",
+  },
+  {
+    id: "messages",
+    tab: "messages",
+    n: "05",
+    title: "Program messages",
+    text: "Promotional messages play at exact times or set intervals. Group them for complex scheduling across locations. We can even create them for you.",
+  },
+  {
+    id: "users",
+    tab: "locations",
+    n: "06",
+    title: "Control every location and zone",
+    text: "Manage music and messages across locations and zones from one interface. Give each user the right level of access, from head office to store manager.",
+  },
+];
+---
+
+<Base
+  title="How Music for Business Works | SoundMachine"
+  description="From sign-up to custom business playlists to station scheduling, SoundMachine makes music streaming for business easy."
+  path="/how-it-works"
+>
+  <PageHero
+    eyebrow="How it works"
+    title="Pick your sound, press play. <em>Licensed for business.</em>"
+    lede="SoundMachine gives you curated stations, your own playlists, schedules and messages, and runs them across every location from one dashboard. Here's how it fits together."
+  >
+    <div slot="actions" class="btn-row">
+      <a class="btn btn-red" href={APP.freeTrial}>Start free trial</a>
+      <a class="btn btn-ghost" href="#steps">See the steps</a>
+    </div>
+  </PageHero>
+
+  <section class="section white" id="steps">
+    <div class="container story">
+      <ol class="steps">
+        {
+          steps.map((s) => (
+            <li class="step" id={s.id} data-step-tab={s.tab}>
+              <span class="num">{s.n}</span>
+              <h2>{s.title}</h2>
+              <p>{s.text}</p>
+              <button type="button" class="text-link try" data-app-goto={s.tab} data-app-target="#how-app">
+                Try it in the demo
+              </button>
+            </li>
+          ))
+        }
+        <li class="step" id="devices">
+          <span class="num">07</span>
+          <h2>Play it on any device</h2>
+          <p>
+            Stream from the web, the iOS and Android apps, or a third-party system such as Sonos. Dedicated SoundMachine players are a reliable, cost-effective option that you configure remotely and control from the
+            mobile app.
+          </p>
+          <a class="text-link" href="/devices">Devices and integrations</a>
+        </li>
+      </ol>
+      <div class="stage">
+        <div class="sticky">
+          <AppDemo id="how-app" initial="stations" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Bring your own playlists</span>
+        <h2>Your favourite playlists, licensed for business</h2>
+        <p>Create a playlist in your favourite music service, import it, and play it legally in your business. Choose the import route that suits you.</p>
+      </div>
+      <div class="grid grid-3 reveal">
+        <article class="card import">
+          <span class="tag">Native</span>
+          <h3>Apple Music</h3>
+          <p>Bring Apple Music playlists straight into SoundMachine with the native integration.</p>
+        </article>
+        <article class="card import">
+          <span class="tag">Fully integrated</span>
+          <h3>Soundiiz</h3>
+          <p>Import playlists from your favourite service, view songs and schedule automatic refreshes. Free and paid tiers.</p>
+        </article>
+        <article class="card import">
+          <span class="tag">Fully integrated · Free</span>
+          <h3>TuneMyMusic</h3>
+          <p>Import playlists from your favourite service, view songs and manage refreshes. Free.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Getting started</span>
+        <h2>Up and running in four steps</h2>
+      </div>
+      <ol class="start reveal">
+        <li>
+          <span>1</span>
+          <h3>Pick your plan</h3>
+          <p>Start a free trial on any plan. No credit card needed, and you can switch plans during the trial.</p>
+        </li>
+        <li>
+          <span>2</span>
+          <h3>Define your sound</h3>
+          <p>Choose stations, import playlists or build mixes that match your brand.</p>
+        </li>
+        <li>
+          <span>3</span>
+          <h3>Program your content</h3>
+          <p>Set schedules and messages once, then push them to every location.</p>
+        </li>
+        <li>
+          <span>4</span>
+          <h3>Enjoy the music</h3>
+          <p>Press play on the web, the app, a SoundMachine player or your existing AV system.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <LogoWall title="You're in good company" />
+  <CtaBand title="Music at your business. Try it for free." />
+</Base>
+
+<style>
+  .story {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+  @media (min-width: 1100px) {
+    .story {
+      grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+      gap: 64px;
+    }
+    .sticky {
+      position: sticky;
+      top: 100px;
+    }
+    .step {
+      min-height: 62vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .stage {
+      order: 2;
+    }
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .step {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+    opacity: 0.45;
+    transition: opacity 0.4s;
+  }
+  .step.active,
+  .step:focus-within {
+    opacity: 1;
+  }
+  .no-io .step {
+    opacity: 1;
+  }
+  .num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--red);
+    letter-spacing: 0.05em;
+  }
+  .step h2 {
+    font-size: clamp(1.7rem, 2.8vw, 2.4rem);
+    margin: 6px 0 12px;
+  }
+  .step p {
+    color: var(--charcoal);
+    font-size: 1.08rem;
+  }
+  .try {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+  .import .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--teal-deep);
+    background: var(--teal-50);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .import h3 {
+    font-size: 1.6rem;
+  }
+  .import p {
+    color: var(--muted);
+    margin: 0;
+  }
+  .start {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    counter-reset: s;
+  }
+  .start li {
+    position: relative;
+    padding: 28px 24px 24px;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .start span {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--yellow);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+  .start p {
+    color: var(--muted);
+    margin: 0;
+  }
+</style>
+
+<script>
+  // Scroll-linked: as each step reaches the middle of the screen, switch the demo tab.
+  const steps = document.querySelectorAll<HTMLElement>(".step");
+  const app = document.querySelector<HTMLElement>("#how-app") as (HTMLElement & { selectTab?: (t: string) => void }) | null;
+  if ("IntersectionObserver" in window && window.matchMedia("(min-width: 1100px)").matches) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          steps.forEach((s) => s.classList.toggle("active", s === e.target));
+          const tab = (e.target as HTMLElement).dataset.stepTab;
+          if (tab) app?.selectTab?.(tab);
+        });
+      },
+      { rootMargin: "-45% 0px -45% 0px" },
+    );
+    steps.forEach((s) => io.observe(s));
+  } else {
+    document.querySelector(".steps")?.classList.add("no-io");
+  }
+</script>

@@ -1,0 +1,132 @@
+---
+import { APP } from "../../data/site";
+---
+
+<div class="uk" data-uk>
+  <h3>Your UK compliance checklist</h3>
+  <p class="muted">Tick off both steps to play music legally in a UK business.</p>
+  <ol>
+    <li>
+      <label>
+        <input type="checkbox" data-uk-step />
+        <span class="tick" aria-hidden="true"></span>
+        <span class="body">
+          <strong>Step 1: TheMusicLicence from PPL PRS Ltd</strong>
+          <span>Covers public performance of compositions (PRS for Music) and recordings (PPL). Apply directly; no music provider can supply it. Small premises typically pay £300–£450 a year.</span>
+        </span>
+      </label>
+      <a class="ext" href="https://pplprs.co.uk/" rel="noopener">Go to PPL PRS ↗</a>
+    </li>
+    <li>
+      <label>
+        <input type="checkbox" data-uk-step />
+        <span class="tick" aria-hidden="true"></span>
+        <span class="body">
+          <strong>Step 2: A music service licensed for business use</strong>
+          <span>Not Spotify, Apple Music or YouTube Music: their terms forbid commercial playback. SoundMachine provides music licensed for commercial use, with scheduling and multi-location control.</span>
+        </span>
+      </label>
+      <a class="ext" href={APP.freeTrial}>Try SoundMachine free</a>
+    </li>
+  </ol>
+  <p class="result" data-uk-result aria-live="polite">0 of 2 complete</p>
+</div>
+
+<style>
+  .uk {
+    padding: clamp(22px, 3.5vw, 40px);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+  }
+  ol {
+    list-style: none;
+    margin: 20px 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  li {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1.5px solid var(--line);
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
+  }
+  li:has(input:checked) {
+    border-color: var(--green);
+    background: #f1faf6;
+  }
+  label {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 14px;
+    cursor: pointer;
+    position: relative;
+  }
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 30px;
+    height: 30px;
+    margin: 0;
+    cursor: pointer;
+  }
+  .tick {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    border: 2px solid var(--line-strong);
+    background: var(--white);
+  }
+  input:checked + .tick {
+    border-color: var(--green);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+        center / 80% no-repeat,
+      var(--green);
+  }
+  input:focus-visible + .tick {
+    outline: 3px solid var(--yellow-strong);
+    outline-offset: 2px;
+  }
+  .body {
+    display: grid;
+    gap: 4px;
+  }
+  .body span {
+    color: var(--charcoal);
+    font-size: 0.95rem;
+  }
+  .ext {
+    justify-self: start;
+    margin-left: 44px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .result {
+    margin: 0;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .result.done {
+    color: var(--green);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-uk]").forEach((root) => {
+    const steps = root.querySelectorAll<HTMLInputElement>("[data-uk-step]");
+    const out = root.querySelector<HTMLElement>("[data-uk-result]")!;
+    const update = () => {
+      const n = Array.from(steps).filter((s) => s.checked).length;
+      out.textContent = n === 2 ? "✓ You're set up to play music legally in your UK business." : `${n} of 2 complete`;
+      out.classList.toggle("done", n === 2);
+    };
+    steps.forEach((s) => s.addEventListener("change", update));
+  });
+</script>

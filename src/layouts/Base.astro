@@ -1,0 +1,88 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+}
+const { title, description, path } = Astro.props;
+const productionUrl = `https://sound-machine.com${path === "/" ? "/" : path}`;
+const orgLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "SoundMachine",
+  url: "https://sound-machine.com/",
+  logo: "https://sound-machine.com/resources/images/logos/soundmachine.svg",
+  foundingDate: "2008",
+  email: "support@sound-machine.com",
+  sameAs: [
+    "https://www.linkedin.com/company/soundmachine",
+    "https://www.instagram.com/soundmachinemusicservice/",
+    "https://www.facebook.com/SoundForBusiness",
+    "https://twitter.com/SoundMachine_US",
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <!-- Staging: never index. Also sent as an X-Robots-Tag header (public/_headers). -->
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#0a262b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SoundMachine" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta name="x-production-url" content={productionUrl} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script is:inline>document.documentElement.classList.add("js");</script>
+    <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header current={path} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      // Reveal-on-scroll for elements marked .reveal (content is visible without JS).
+      const els = document.querySelectorAll<HTMLElement>(".reveal");
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add("in");
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: "0px 0px -8% 0px", threshold: 0.05 },
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.classList.add("in"));
+      }
+
+      // Keep range-input track fills in sync.
+      const syncFill = (r: HTMLInputElement) => {
+        const pct = ((Number(r.value) - Number(r.min || 0)) / (Number(r.max || 100) - Number(r.min || 0))) * 100;
+        r.style.setProperty("--fill", `${pct}%`);
+      };
+      document.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach((r) => {
+        syncFill(r);
+        r.addEventListener("input", () => syncFill(r));
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,120 @@
+---
+interface Props {
+  items: { q: string; a: string }[];
+  title?: string;
+  intro?: string;
+}
+const { items, title = "Frequently asked questions", intro } = Astro.props;
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })),
+};
+---
+
+<section class="section faq">
+  <div class="container faq-grid">
+    <div class="faq-head">
+      <span class="eyebrow">FAQ</span>
+      <h2>{title}</h2>
+      {intro && <p class="muted">{intro}</p>}
+      <p class="muted small">
+        Still have questions? <a href="/contact">Talk to our team</a>.
+      </p>
+    </div>
+    <div class="faq-list">
+      {
+        items.map((i) => (
+          <details>
+            <summary>
+              <span>{i.q}</span>
+              <span class="pm" aria-hidden="true" />
+            </summary>
+            <p>{i.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+</section>
+
+<style>
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+  @media (min-width: 960px) {
+    .faq-grid {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 80px;
+    }
+    .faq-head {
+      position: sticky;
+      top: 110px;
+      align-self: start;
+    }
+  }
+  .faq-list {
+    border-top: 1px solid var(--line);
+  }
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+  summary {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    padding: 22px 0;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .pm {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    position: relative;
+    transition:
+      transform 0.3s var(--ease),
+      background-color 0.2s;
+  }
+  .pm::before,
+  .pm::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 2px;
+    margin: -1px 0 0 -6px;
+    background: var(--ink);
+    border-radius: 2px;
+  }
+  .pm::after {
+    transform: rotate(90deg);
+    transition: transform 0.3s var(--ease);
+  }
+  details[open] .pm {
+    background: var(--yellow);
+    border-color: var(--yellow);
+  }
+  details[open] .pm::after {
+    transform: rotate(0);
+  }
+  details p {
+    margin: 0 0 22px;
+    color: var(--charcoal);
+    max-width: 64ch;
+  }
+</style>
