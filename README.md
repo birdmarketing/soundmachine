@@ -68,7 +68,9 @@ Data lives in `src/data/`, pages in `src/pages/`, and components in `src/compone
 
 ## Deployment
 
-The site is a static assets Cloudflare Worker (`wrangler.jsonc`) on the custom domain `soundmachine.bird.co.uk`:
+The site is a static assets Cloudflare Worker, `bird-marketing-soundmachine` (`wrangler.jsonc`), on the custom domain `soundmachine.bird.co.uk`, in the "1 - Support@birdmarketing.co.uk" Cloudflare account, alongside the other Bird staging sites.
+
+Like the other Bird sites it is meant to deploy through **Cloudflare Workers Builds**: push to `main`, Cloudflare runs `npm run build && npm run check`, then `npx wrangler deploy`. To deploy by hand:
 
 ```bash
 npm run deploy     # build → verify → wrangler deploy
